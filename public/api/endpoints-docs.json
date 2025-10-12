@@ -1,0 +1,459 @@
+{
+  "baseUrlEnv": "NEXT_PUBLIC_API_BASE_URL",
+  "authHeader": "Authorization: Bearer <token>",
+  "notes": "Field names and shapes are typical/assumed. Align these with your backend’s exact contracts.",
+  "endpoints": {
+    "auth": {
+      "login": {
+        "name": "Login",
+        "path": "/api/LoginMaster/GetLoginDetailsByEmailIdAndPassword",
+        "method": "POST",
+        "authRequired": false,
+        "headers": { "Content-Type": "application/json" },
+        "requestSchema": {
+          "type": "object",
+          "required": ["emailId", "password"],
+          "properties": {
+            "emailId": { "type": "string", "format": "email" },
+            "password": { "type": "string", "minLength": 6 }
+          }
+        },
+        "exampleRequest": {
+          "emailId": "user@example.com",
+          "password": "Secret#123"
+        },
+        "responseSchema": {
+          "type": "object",
+          "properties": {
+            "success": { "type": "boolean" },
+            "message": { "type": "string" },
+            "data": {
+              "type": "object",
+              "properties": {
+                "userId": { "type": ["string", "number"] },
+                "name": { "type": "string" },
+                "emailId": { "type": "string" },
+                "roles": { "type": "array", "items": { "type": ["string", "number"] } },
+                "permissions": { "type": "array", "items": { "type": "string" } },
+                "token": { "type": "string" }
+              }
+            }
+          }
+        },
+        "exampleResponse": {
+          "success": true,
+          "message": "Login successful",
+          "data": {
+            "userId": 101,
+            "name": "Jane Doe",
+            "emailId": "user@example.com",
+            "roles": ["Admin"],
+            "permissions": ["Users.Read", "Users.Write"],
+            "token": "jwt-or-session-token"
+          }
+        },
+        "statusCodes": [200, 400, 401, 500]
+      },
+      "register": {
+        "name": "Register User",
+        "path": "/api/LoginMaster/RegisterUser",
+        "method": "POST",
+        "authRequired": false,
+        "headers": { "Content-Type": "application/json" },
+        "requestSchema": {
+          "type": "object",
+          "required": ["name", "emailId", "password"],
+          "properties": {
+            "name": { "type": "string" },
+            "emailId": { "type": "string", "format": "email" },
+            "password": { "type": "string", "minLength": 6 },
+            "mobileNumber": { "type": "string" },
+            "address": { "type": "string" },
+            "roleIds": { "type": "array", "items": { "type": "number" } }
+          }
+        },
+        "exampleRequest": {
+          "name": "Jane Doe",
+          "emailId": "jane@example.com",
+          "password": "Secret#123",
+          "mobileNumber": "9876543210",
+          "address": "221B Baker Street",
+          "roleIds": [2]
+        },
+        "responseSchema": {
+          "type": "object",
+          "properties": {
+            "success": { "type": "boolean" },
+            "message": { "type": "string" },
+            "data": {
+              "type": "object",
+              "properties": {
+                "userId": { "type": ["string", "number"] }
+              }
+            }
+          }
+        },
+        "exampleResponse": {
+          "success": true,
+          "message": "User registered",
+          "data": { "userId": 102 }
+        },
+        "statusCodes": [201, 400, 409, 500]
+      }
+    },
+    "masters": {
+      "users": {
+        "name": "Get All Users",
+        "path": "/api/UserMaster/GetAllUsers",
+        "method": "GET",
+        "authRequired": true,
+        "headers": { "Authorization": "Bearer <token>" },
+        "requestSchema": null,
+        "responseSchema": {
+          "type": "object",
+          "properties": {
+            "success": { "type": "boolean" },
+            "data": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "userId": { "type": ["string", "number"] },
+                  "name": { "type": "string" },
+                  "emailId": { "type": "string" },
+                  "mobileNumber": { "type": "string" },
+                  "address": { "type": "string" },
+                  "isActive": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        },
+        "exampleResponse": {
+          "success": true,
+          "data": [
+            {
+              "userId": 101,
+              "name": "Jane Doe",
+              "emailId": "jane@example.com",
+              "mobileNumber": "9876543210",
+              "address": "Baker St",
+              "isActive": true
+            }
+          ]
+        },
+        "statusCodes": [200, 401, 500]
+      },
+      "roles": {
+        "name": "Get All Roles",
+        "path": "/api/RoleMaster/GetAllRoles",
+        "method": "GET",
+        "authRequired": true,
+        "headers": { "Authorization": "Bearer <token>" },
+        "requestSchema": null,
+        "responseSchema": {
+          "type": "object",
+          "properties": {
+            "success": { "type": "boolean" },
+            "data": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "roleId": { "type": ["string", "number"] },
+                  "roleName": { "type": "string" },
+                  "isActive": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        },
+        "exampleResponse": {
+          "success": true,
+          "data": [
+            { "roleId": 1, "roleName": "Admin", "isActive": true },
+            { "roleId": 2, "roleName": "Engineer", "isActive": true }
+          ]
+        },
+        "statusCodes": [200, 401, 500]
+      },
+      "permissions": {
+        "name": "Get All Permissions",
+        "path": "/api/PermissionMaster/GetAllPermissions",
+        "method": "GET",
+        "authRequired": true,
+        "headers": { "Authorization": "Bearer <token>" },
+        "requestSchema": null,
+        "responseSchema": {
+          "type": "object",
+          "properties": {
+            "success": { "type": "boolean" },
+            "data": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "permissionId": { "type": ["string", "number"] },
+                  "permissionKey": { "type": "string" },
+                  "description": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "exampleResponse": {
+          "success": true,
+          "data": [{ "permissionId": 10, "permissionKey": "Users.Read", "description": "Can read users" }]
+        },
+        "statusCodes": [200, 401, 500]
+      },
+      "userRoles": {
+        "name": "Get User Roles",
+        "path": "/api/UserMaster/GetUserRoles",
+        "method": "GET",
+        "authRequired": true,
+        "headers": { "Authorization": "Bearer <token>" },
+        "requestSchema": { "type": "object", "properties": { "userId": { "type": ["string", "number"] } } },
+        "requestNotes": "If GET cannot accept body, pass userId via query string (?userId=...).",
+        "responseSchema": {
+          "type": "object",
+          "properties": {
+            "success": { "type": "boolean" },
+            "data": { "type": "array", "items": { "type": ["string", "number"] } }
+          }
+        },
+        "exampleResponse": { "success": true, "data": [1, 2] },
+        "statusCodes": [200, 400, 401, 500]
+      },
+      "rolePermissions": {
+        "name": "Get Role Permissions",
+        "path": "/api/RoleMaster/GetRolePermissions",
+        "method": "GET",
+        "authRequired": true,
+        "headers": { "Authorization": "Bearer <token>" },
+        "requestSchema": { "type": "object", "properties": { "roleId": { "type": ["string", "number"] } } },
+        "requestNotes": "If GET cannot accept body, pass roleId via query string (?roleId=...).",
+        "responseSchema": {
+          "type": "object",
+          "properties": {
+            "success": { "type": "boolean" },
+            "data": { "type": "array", "items": { "type": ["string", "number"] } }
+          }
+        },
+        "exampleResponse": { "success": true, "data": [10, 11, 12] },
+        "statusCodes": [200, 400, 401, 500]
+      },
+      "customers": {
+        "name": "Get All Customers",
+        "path": "/api/CustomerMaster/GetAllCustomers",
+        "method": "GET",
+        "authRequired": true,
+        "headers": { "Authorization": "Bearer <token>" },
+        "requestSchema": null,
+        "responseSchema": {
+          "type": "object",
+          "properties": {
+            "success": { "type": "boolean" },
+            "data": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "customerId": { "type": ["string", "number"] },
+                  "customerName": { "type": "string" },
+                  "mobileNumber": { "type": "string" },
+                  "email": { "type": "string" },
+                  "address": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "exampleResponse": {
+          "success": true,
+          "data": [
+            {
+              "customerId": 201,
+              "customerName": "Acme Corp",
+              "mobileNumber": "9000000000",
+              "email": "support@acme.com",
+              "address": "1 Infinite Loop"
+            }
+          ]
+        },
+        "statusCodes": [200, 401, 500]
+      },
+      "engineers": {
+        "name": "Get All Engineers",
+        "path": "/api/EngineerMaster/GetAllEngineers",
+        "method": "GET",
+        "authRequired": true,
+        "headers": { "Authorization": "Bearer <token>" },
+        "requestSchema": null,
+        "responseSchema": {
+          "type": "object",
+          "properties": {
+            "success": { "type": "boolean" },
+            "data": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "engineerId": { "type": ["string", "number"] },
+                  "name": { "type": "string" },
+                  "email": { "type": "string" },
+                  "mobileNumber": { "type": "string" },
+                  "isActive": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        },
+        "exampleResponse": {
+          "success": true,
+          "data": [
+            {
+              "engineerId": 301,
+              "name": "John Smith",
+              "email": "john@cft.com",
+              "mobileNumber": "9555555555",
+              "isActive": true
+            }
+          ]
+        },
+        "statusCodes": [200, 401, 500]
+      }
+    },
+    "complaints": {
+      "list": {
+        "name": "Get All Complaints",
+        "path": "/api/Complaint/GetAll",
+        "method": "GET",
+        "authRequired": true,
+        "headers": { "Authorization": "Bearer <token>" },
+        "requestSchema": null,
+        "responseSchema": {
+          "type": "object",
+          "properties": {
+            "success": { "type": "boolean" },
+            "data": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "complaintId": { "type": ["string", "number"] },
+                  "customerId": { "type": ["string", "number"] },
+                  "customerName": { "type": "string" },
+                  "mobileNumber": { "type": "string" },
+                  "email": { "type": "string" },
+                  "address": { "type": "string" },
+                  "natureOfComplaint": { "type": "string" },
+                  "details": { "type": "string" },
+                  "assignedEngineerId": { "type": ["string", "number", "null"] },
+                  "status": { "type": "string" },
+                  "createdAt": { "type": "string", "format": "date-time" }
+                }
+              }
+            }
+          }
+        },
+        "exampleResponse": {
+          "success": true,
+          "data": [
+            {
+              "complaintId": 401,
+              "customerId": 201,
+              "customerName": "Acme Corp",
+              "mobileNumber": "9000000000",
+              "email": "support@acme.com",
+              "address": "1 Infinite Loop",
+              "natureOfComplaint": "Installation",
+              "details": "Requires technician visit",
+              "assignedEngineerId": 301,
+              "status": "Open",
+              "createdAt": "2025-10-08T10:00:00Z"
+            }
+          ]
+        },
+        "statusCodes": [200, 401, 500]
+      },
+      "create": {
+        "name": "Create Complaint",
+        "path": "/api/Complaint/Create",
+        "method": "POST",
+        "authRequired": true,
+        "headers": { "Content-Type": "application/json", "Authorization": "Bearer <token>" },
+        "requestSchema": {
+          "type": "object",
+          "required": ["customerId", "natureOfComplaint", "details"],
+          "properties": {
+            "customerId": { "type": ["string", "number"] },
+            "natureOfComplaint": { "type": "string" },
+            "details": { "type": "string" },
+            "mobileNumber": { "type": "string" },
+            "email": { "type": "string" },
+            "address": { "type": "string" }
+          }
+        },
+        "exampleRequest": {
+          "customerId": 201,
+          "natureOfComplaint": "Service",
+          "details": "Noise from unit",
+          "mobileNumber": "9000000000",
+          "email": "support@acme.com",
+          "address": "1 Infinite Loop"
+        },
+        "responseSchema": {
+          "type": "object",
+          "properties": {
+            "success": { "type": "boolean" },
+            "message": { "type": "string" },
+            "data": {
+              "type": "object",
+              "properties": {
+                "complaintId": { "type": ["string", "number"] }
+              }
+            }
+          }
+        },
+        "exampleResponse": {
+          "success": true,
+          "message": "Complaint created",
+          "data": { "complaintId": 402 }
+        },
+        "statusCodes": [201, 400, 401, 500]
+      },
+      "assignEngineer": {
+        "name": "Assign Engineer",
+        "path": "/api/Complaint/AssignEngineer",
+        "method": "POST",
+        "authRequired": true,
+        "headers": { "Content-Type": "application/json", "Authorization": "Bearer <token>" },
+        "requestSchema": {
+          "type": "object",
+          "required": ["complaintId", "engineerId"],
+          "properties": {
+            "complaintId": { "type": ["string", "number"] },
+            "engineerId": { "type": ["string", "number"] }
+          }
+        },
+        "exampleRequest": {
+          "complaintId": 401,
+          "engineerId": 301
+        },
+        "responseSchema": {
+          "type": "object",
+          "properties": {
+            "success": { "type": "boolean" },
+            "message": { "type": "string" }
+          }
+        },
+        "exampleResponse": {
+          "success": true,
+          "message": "Engineer assigned"
+        },
+        "statusCodes": [200, 400, 401, 404, 500]
+      }
+    }
+  }
+}
