@@ -24,9 +24,15 @@ const routeOptions: { key: RouteKey; label: string }[] = [
 export default function PermissionMappingPage() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   const { rolePermissions, setRolePermissions } = useMasterData()
-  const user = JSON.parse(localStorage.getItem("cft_user") || "null")
+  //const user = JSON.parse(localStorage.getItem("cft_user") || "null")
   const [role, setRole] = useState<Role>("Admin")
   const [selected, setSelected] = useState<RouteKey[]>([])
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+     const user = localStorage.getItem("cft_user");
+     if (user) setUser(JSON.parse(user));
+  }, []);
 
   useEffect(() => {
     setSelected(rolePermissions[role] || [])
