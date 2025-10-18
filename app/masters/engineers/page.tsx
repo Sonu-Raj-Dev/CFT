@@ -22,6 +22,12 @@ export default function EngineerMasterPage() {
   const { user } = useAuthPermissions()
   const [form, setForm] = useState({ name: "", contact: "", address: "", email: "" })
 
+
+
+  const engineersList = engineers?.data?.map((x) => x.data) ?? [];
+
+  
+  console.log("engineers",engineers);
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!form.name || !form.contact || !form.address || !form.email) return
@@ -80,7 +86,7 @@ export default function EngineerMasterPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {engineers.map((e) => (
+                    {engineersList?.map((e) => (
                       <TableRow key={e.id}>
                         <TableCell className="font-medium">{e.name}</TableCell>
                         <TableCell>{e.contact}</TableCell>

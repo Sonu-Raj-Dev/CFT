@@ -26,13 +26,19 @@ export default function CustomerMasterPage() {
   const { user } = useAuthPermissions()
 
   console.log("customers",customers);
-  const filtered = useMemo(
-    () =>
-      customers?.data?.filter((c) =>
-        [c.name, c.mobile, c.email, c.address].join(" ").toLowerCase().includes(search.toLowerCase()),
-      ),
-    [customers, search],
-  )
+  const filtered = useMemo(() => {
+  const list = customers?.data?.map((x) => x.data) ?? [];
+  const term = search?.toLowerCase() ?? "";
+  return list.filter((c) =>
+    [c.name, c.mobile, c.email, c.address]
+      .join(" ")
+      .toLowerCase()
+      .includes(term)
+  );
+}, [customers, search]);
+
+
+console.log("filtered customers",filtered);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -95,7 +101,7 @@ export default function CustomerMasterPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filtered?.data?.map((c) => (
+                    {filtered?.map((c) => (
                       <TableRow key={c.id}>
                         <TableCell className="font-medium">{c.name}</TableCell>
                         <TableCell>{c.mobile}</TableCell>
@@ -105,7 +111,7 @@ export default function CustomerMasterPage() {
                           <Button
                             variant="outline"
                             className="mr-2 bg-transparent"
-                            onClick={() => updateCustomer(c.id, { name: c.name })}
+                          //  onClick={() => updateCustomer(c.id, { name: c.name })}
                           >
                             Edit
                           </Button>
@@ -120,7 +126,7 @@ export default function CustomerMasterPage() {
               </div>
 
               <div className="md:hidden space-y-3">
-                {filtered?.data?.map((c) => (
+                {filtered?.map((c) => (
                   <div key={c.id} className="border rounded-lg p-4">
                     <div className="flex items-center justify-between">
                       <div className="font-semibold">{c.name}</div>
