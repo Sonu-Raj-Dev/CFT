@@ -23,6 +23,8 @@ export default function ComplaintModal({ complaint, onClose, onAssign }: Complai
   const { engineers } = useMasterData()
 
   console.log("Engineers List:", engineers);
+  const engineersList = engineers?.data?.map((x) => x.data) ?? [];
+
   const handleSubmit = () => {
     if (!selectedEngineer) {
       alert("Please select an engineer before submitting")
@@ -93,8 +95,8 @@ export default function ComplaintModal({ complaint, onClose, onAssign }: Complai
                   <SelectValue placeholder="Select an engineer" />
                 </SelectTrigger>
                 <SelectContent>
-                  {engineers.map((e) => (
-                    <SelectItem key={e.id} value={e.id}>
+                  {engineersList.map((e) => (
+                    <SelectItem key={e.engineerId} value={e.engineerId}>
                       {e.name}
                     </SelectItem>
                   ))}

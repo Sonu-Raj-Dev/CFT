@@ -22,6 +22,8 @@ export default function UserMasterPage() {
   const { user } = useAuthPermissions()
   const [form, setForm] = useState({ name: "", email: "", mobile: "", password: "", address: "" })
 
+  const usersList = users?.data?.map((x) => x.data) ?? [];
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!form.name || !form.email || !form.mobile || !form.password || !form.address) return
@@ -88,7 +90,7 @@ export default function UserMasterPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {users.map((u) => (
+                    {usersList.map((u) => (
                       <TableRow key={u.id}>
                         <TableCell className="font-medium">{u.name}</TableCell>
                         <TableCell>{u.email}</TableCell>

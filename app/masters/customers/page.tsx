@@ -26,19 +26,15 @@ export default function CustomerMasterPage() {
   const { user } = useAuthPermissions()
 
   console.log("customers",customers);
-  const filtered = useMemo(() => {
-  const list = customers?.data?.map((x) => x.data) ?? [];
-  const term = search?.toLowerCase() ?? "";
-  return list.filter((c) =>
-    [c.name, c.mobile, c.email, c.address]
-      .join(" ")
-      .toLowerCase()
-      .includes(term)
-  );
-}, [customers, search]);
+  const customersList = customers?.data?.map((x) => x.data) ?? [];
 
-
-console.log("filtered customers",filtered);
+  const filtered = useMemo(
+    () =>
+      customers?.data?.filter((c) =>
+        [c.name, c.mobile, c.email, c.address].join(" ").toLowerCase().includes(search.toLowerCase()),
+      ),
+    [customers, search],
+  )
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -101,7 +97,7 @@ console.log("filtered customers",filtered);
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filtered?.map((c) => (
+                    {customersList?.map((c) => (
                       <TableRow key={c.id}>
                         <TableCell className="font-medium">{c.name}</TableCell>
                         <TableCell>{c.mobile}</TableCell>
@@ -111,7 +107,7 @@ console.log("filtered customers",filtered);
                           <Button
                             variant="outline"
                             className="mr-2 bg-transparent"
-                          //  onClick={() => updateCustomer(c.id, { name: c.name })}
+                            onClick={() => updateCustomer(c.id, { name: c.name })}
                           >
                             Edit
                           </Button>
@@ -126,7 +122,7 @@ console.log("filtered customers",filtered);
               </div>
 
               <div className="md:hidden space-y-3">
-                {filtered?.map((c) => (
+                {filtered?.data?.map((c) => (
                   <div key={c.id} className="border rounded-lg p-4">
                     <div className="flex items-center justify-between">
                       <div className="font-semibold">{c.name}</div>
