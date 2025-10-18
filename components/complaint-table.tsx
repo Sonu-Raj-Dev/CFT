@@ -32,7 +32,7 @@ export default function ComplaintTable({ complaints, onRowClick }: ComplaintTabl
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {complaints?.data?.map((complaint, index) => (
+                  {complaints?.map((complaint, index) => (
                     <motion.tr
                       key={complaint.id}
                       initial={{ opacity: 0, x: -20 }}
@@ -43,7 +43,7 @@ export default function ComplaintTable({ complaints, onRowClick }: ComplaintTabl
                       whileHover={{ scale: 1.01, boxShadow: "0 4px 16px rgba(13, 59, 102, 0.15)" }}
                     >
                       <TableCell className="font-medium">{complaint.customerName}</TableCell>
-                      <TableCell className="max-w-xs truncate">{complaint.complaintDetails}</TableCell>
+                      <TableCell className="max-w-xs truncate">{complaint.complaintdetails}</TableCell>
                       <TableCell>{complaint.mobileNumber}</TableCell>
                       <TableCell className="max-w-xs truncate">{complaint.address}</TableCell>
                       <TableCell>{complaint.email}</TableCell>
@@ -59,7 +59,7 @@ export default function ComplaintTable({ complaints, onRowClick }: ComplaintTabl
             </div>
 
             <div className="md:hidden space-y-4">
-              {complaints?.data?.map((complaint, index) => (
+              {complaints?.map((complaint, index) => (
                 <motion.div
                   key={complaint.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -91,7 +91,7 @@ export default function ComplaintTable({ complaints, onRowClick }: ComplaintTabl
                       </div>
                       <div>
                         <span className="text-muted-foreground">Details:</span>
-                        <p className="mt-1 text-muted-foreground line-clamp-2">{complaint.complaintDetails}</p>
+                        <p className="mt-1 text-muted-foreground line-clamp-2">{complaint.complaintdetails}</p>
                       </div>
                     </div>
                   </div>

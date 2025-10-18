@@ -23,7 +23,8 @@ export default function ComplaintDashboard({ user }: ComplaintDashboardProps) {
   const handleRowClick = (complaint: Complaint) => {
     setSelectedComplaint(complaint)
   }
-
+  const flattenedComplaints = complaints?.data?.map((item: any) => item.data) || []
+console.log("Flattened Complaints:", flattenedComplaints);
   const handleCloseModal = () => {
     setSelectedComplaint(null)
   }
@@ -41,7 +42,7 @@ export default function ComplaintDashboard({ user }: ComplaintDashboardProps) {
       <div className="flex-1 flex flex-col lg:ml-[60px] mt-[60px]">
         <Header user={user} onMenuClick={() => setIsMobileSidebarOpen(true)} />
         <main className="flex-1 overflow-auto">
-          <ComplaintTable complaints={complaints?.data} onRowClick={handleRowClick} />
+          <ComplaintTable complaints={flattenedComplaints} onRowClick={handleRowClick} />
         </main>
         <Footer />
       </div>

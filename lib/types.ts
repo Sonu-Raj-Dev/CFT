@@ -1,7 +1,7 @@
 export interface Complaint {
   id: string
   customerName: string
-  complaintDetails: string
+  complaintdetails: string
   mobileNumber: string
   address: string
   email: string

@@ -54,7 +54,6 @@ export function AuthPermissionsProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     try {
       const session = await apiLogin({ email, password })
-      debugger;
       const rolesFromApi = Array.isArray(session.roleId) ? (session.roleId as Role[]) : (userRoles?.[session.id] ?? [])
       const normalized: SessionUser = {
         id: String(session.id),

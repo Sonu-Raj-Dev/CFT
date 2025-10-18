@@ -22,6 +22,7 @@ export default function ComplaintModal({ complaint, onClose, onAssign }: Complai
   const [showSuccess, setShowSuccess] = useState(false)
   const { engineers } = useMasterData()
 
+  console.log("Engineers List:", engineers);
   const handleSubmit = () => {
     if (!selectedEngineer) {
       alert("Please select an engineer before submitting")
@@ -79,7 +80,7 @@ export default function ComplaintModal({ complaint, onClose, onAssign }: Complai
               <Label htmlFor="complaintDetails">Complaint Details</Label>
               <Textarea
                 id="complaintDetails"
-                value={complaint.complaintDetails}
+                value={complaint.complaintdetails}
                 disabled
                 className="bg-muted min-h-[100px] resize-none"
               />

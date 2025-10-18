@@ -5,5 +5,6 @@ import { defaults } from "@/lib/server/defaults"
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null)
+
   return respondOrDefault(proxyPost(req, COMPLAINT_ASSIGN_URL, body), defaults.complaints.assign, 200)
 }

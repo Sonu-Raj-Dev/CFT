@@ -15,7 +15,7 @@ export type User = { id: string; name: string; email: string; mobile?: string; a
 export type Role = { id: string; name: string }
 export type Permission = { id: string; key: string; label: string }
 export type Customer = { id: string; name: string; mobile: string; address?: string; email?: string }
-export type Engineer = { id: string; name: string; mobile?: string; address?: string; email?: string }
+export type Engineer = { engineerId: string; name: string; mobile?: string; address?: string; email?: string }
 
 export type UserRoles = Record<string, string[]> // userId -> roleIds
 export type RolePermissions = Record<string, string[]> // roleId -> permissionIds
@@ -39,5 +39,6 @@ export async function fetchCustomers() {
   return apiGet<Customer[]>(CUSTOMERS_URL)
 }
 export async function fetchEngineers() {
+  debugger;
   return apiGet<Engineer[]>(ENGINEERS_URL)
 }

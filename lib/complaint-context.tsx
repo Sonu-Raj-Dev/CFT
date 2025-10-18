@@ -20,7 +20,7 @@ export function ComplaintProvider({ children }: { children: ReactNode }) {
     let cancelled = false
     async function load() {
       try {
-        debugger;
+    
         var UserId = localStorage.getItem("cft_user");
         console.log("UserId from localStorage:", UserId);
 
