@@ -30,7 +30,7 @@ export default function RegisterComplaintPage() {
 
 
   const customersList = customers?.data?.map((x) => x.data) ?? [];
-console.log("customersList:", customersList);
+  console.log("customersList:", customersList);
   const [formData, setFormData] = useState({
     customerName: "",
     mobileNumber: "",
@@ -57,8 +57,8 @@ console.log("customersList:", customersList);
   }
 
   const handleSelectCustomer = (id: string) => {
-    setSelectedCustomerId(id)
-    const c = customers.find((x) => x.id === id)
+    setSelectedCustomerId(id);
+    const c = customersList.find((x) => x.id === Number(id));
     if (c) {
       setFormData((prev) => ({
         ...prev,
@@ -66,9 +66,10 @@ console.log("customersList:", customersList);
         mobileNumber: c.mobile,
         email: c.email,
         address: c.address,
-      }))
+      }));
     }
-  }
+  };
+
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -138,7 +139,7 @@ console.log("customersList:", customersList);
                       </SelectTrigger>
                       <SelectContent>
                         {customersList?.map((c) => (
-                          <SelectItem key={c.id} value={c.id}>
+                          <SelectItem key={c.id} value={String(c.id)}>
                             {c.name}
                           </SelectItem>
                         ))}
