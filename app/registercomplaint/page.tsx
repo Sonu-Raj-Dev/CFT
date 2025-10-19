@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
@@ -18,26 +17,27 @@ import Sidebar from "@/components/sidebar"
 import Footer from "@/components/footer"
 
 export default function RegisterComplaintPage() {
-  debugger;
   const router = useRouter()
   const { addComplaint } = useComplaints()
   const { customers } = useMasterData()
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null)
+  const [user, setUser] = useState<{ id: number; name: string; email: string } | null>(null)
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [ripplePosition, setRipplePosition] = useState<{ x: number; y: number } | null>(null)
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>("")
 
+  const customersList = customers?.data?.map((x) => x.data) ?? []
+  console.log("customersList:", customersList)
 
-  const customersList = customers?.data?.map((x) => x.data) ?? [];
-  console.log("customersList:", customersList);
+  // Fixed form state - CustomerId should be number
   const [formData, setFormData] = useState({
     customerName: "",
     mobileNumber: "",
     email: "",
     address: "",
-    natureOfComplaint: "",
-    complaintDetails: "",
+    NatureOfComplaint: "",
+    Complaintdetails: "",
+    CustomerId: 0 // This should be number, not string
   })
 
   useEffect(() => {
@@ -45,7 +45,8 @@ export default function RegisterComplaintPage() {
     if (!storedUser) {
       router.push("/login")
     } else {
-      setUser(JSON.parse(storedUser))
+      const userData = JSON.parse(storedUser)
+      setUser(userData)
     }
   }, [router])
 
@@ -57,47 +58,95 @@ export default function RegisterComplaintPage() {
   }
 
   const handleSelectCustomer = (id: string) => {
-    setSelectedCustomerId(id);
-    const c = customersList.find((x) => x.id === Number(id));
-    if (c) {
+    setSelectedCustomerId(id)
+    const customer = customersList.find((x) => x.id === Number(id))
+    if (customer) {
       setFormData((prev) => ({
         ...prev,
-        customerName: c.name,
-        mobileNumber: c.mobile,
-        email: c.email,
-        address: c.address,
-      }));
+        customerName: customer.name,
+        mobileNumber: customer.mobile,
+        email: customer.email,
+        address: customer.address,
+        CustomerId: Number(id) // Convert to number
+      }))
     }
-  };
-
+  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsSubmitting(true)
 
-    // Validate form
-    if (
-      !formData.customerName ||
-      !formData.mobileNumber ||
-      !formData.email ||
-      !formData.address ||
-      !formData.natureOfComplaint ||
-      !formData.complaintDetails
-    ) {
-      alert("Please fill in all fields")
+    // Fixed validation - check all required fields including CustomerId
+    const requiredFields = [
+      "customerName",
+      "mobileNumber", 
+      "email",
+      "address",
+      "NatureOfComplaint",
+      "Complaintdetails",
+      "CustomerId"
+    ]
+
+    const missingFields = requiredFields.filter(field => {
+      const value = formData[field as keyof typeof formData]
+      return value === "" || value === 0 || value === null || value === undefined
+    })
+    
+    if (missingFields.length > 0) {
+      alert(`Please fill in all required fields. Missing: ${missingFields.join(", ")}`)
       setIsSubmitting(false)
       return
     }
 
-    // Add complaint
-    addComplaint(formData)
+    try {
+      // Get current user from localStorage to ensure we have the latest data
+      const storedUser = localStorage.getItem("cft_user")
+      const currentUser = storedUser ? JSON.parse(storedUser) : null
+      console.log("Current user from localStorage:", currentUser);
+      if (!currentUser || !currentUser.id) {
+        alert("User not found. Please login again.")
+        router.push("/login")
+        return
+      }
 
-    // Show success message
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    alert("Complaint registered successfully!")
+      // Prepare complaint data with CreatedBy
+      const complaintData = {
+        ...formData,
+        id: Date.now(), // Generate unique ID
+        status: "Open",
+        createdAt: new Date().toISOString(),
+        CreatedBy: parseInt(currentUser.id),
+        // Add any other required fields for your complaint context
+      }
 
-    // Redirect to dashboard
-    router.push("/dashboard")
+      console.log("Submitting complaint:", complaintData)
+
+      // Add complaint
+      await addComplaint(complaintData)
+
+      // Show success message
+      alert("Complaint registered successfully!")
+
+      // Reset form
+      setFormData({
+        customerName: "",
+        mobileNumber: "",
+        email: "",
+        address: "",
+        NatureOfComplaint: "",
+        Complaintdetails: "",
+        CustomerId: 0 // Reset to 0, not empty string
+      })
+      setSelectedCustomerId("")
+
+      // Redirect to dashboard
+      router.push("/dashboard")
+    } catch (error) {
+      console.error("Error submitting complaint:", error)
+      alert("Failed to register complaint. Please try again.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleRippleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -132,15 +181,15 @@ export default function RegisterComplaintPage() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {/* Select customer */}
                   <div className="space-y-2">
-                    <Label htmlFor="customer">Select Customer</Label>
+                    <Label htmlFor="customer">Select Customer *</Label>
                     <Select value={selectedCustomerId} onValueChange={handleSelectCustomer}>
                       <SelectTrigger id="customer">
                         <SelectValue placeholder="Choose a customer" />
                       </SelectTrigger>
                       <SelectContent>
-                        {customersList?.map((c) => (
-                          <SelectItem key={c.id} value={String(c.id)}>
-                            {c.name}
+                        {customersList?.map((customer) => (
+                          <SelectItem key={customer.id} value={String(customer.id)}>
+                            {customer.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -149,7 +198,7 @@ export default function RegisterComplaintPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label htmlFor="customerName">Customer Name</Label>
+                      <Label htmlFor="customerName">Customer Name *</Label>
                       <Input
                         id="customerName"
                         name="customerName"
@@ -161,7 +210,7 @@ export default function RegisterComplaintPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="mobileNumber">Mobile Number</Label>
+                      <Label htmlFor="mobileNumber">Mobile Number *</Label>
                       <Input
                         id="mobileNumber"
                         name="mobileNumber"
@@ -174,7 +223,7 @@ export default function RegisterComplaintPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
+                      <Label htmlFor="email">Email *</Label>
                       <Input
                         id="email"
                         name="email"
@@ -187,10 +236,10 @@ export default function RegisterComplaintPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="natureOfComplaint">Nature of Complaint</Label>
+                      <Label htmlFor="natureOfComplaint">Nature of Complaint *</Label>
                       <Select
-                        value={formData.natureOfComplaint}
-                        onValueChange={(v) => setFormData((p) => ({ ...p, natureOfComplaint: v }))}
+                        value={formData.NatureOfComplaint}
+                        onValueChange={(value) => setFormData((prev) => ({ ...prev, NatureOfComplaint: value }))}
                       >
                         <SelectTrigger id="natureOfComplaint">
                           <SelectValue placeholder="Select type" />
@@ -206,7 +255,7 @@ export default function RegisterComplaintPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="address">Address</Label>
+                    <Label htmlFor="address">Address *</Label>
                     <Input
                       id="address"
                       name="address"
@@ -218,11 +267,11 @@ export default function RegisterComplaintPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="complaintDetails">Complaint Details</Label>
+                    <Label htmlFor="complaintDetails">Complaint Details *</Label>
                     <Textarea
                       id="complaintDetails"
-                      name="complaintDetails"
-                      value={formData.complaintDetails}
+                      name="Complaintdetails"
+                      value={formData.Complaintdetails}
                       onChange={handleChange}
                       placeholder="Describe the complaint in detail..."
                       rows={5}
@@ -250,7 +299,9 @@ export default function RegisterComplaintPage() {
                           }}
                         />
                       )}
-                      <span className="relative z-10">{isSubmitting ? "Submitting..." : "Submit Complaint"}</span>
+                      <span className="relative z-10">
+                        {isSubmitting ? "Submitting..." : "Submit Complaint"}
+                      </span>
                     </Button>
                   </motion.div>
                 </form>

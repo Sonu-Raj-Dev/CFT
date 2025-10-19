@@ -48,42 +48,35 @@ console.log("allowedRoutes in sidebar:", allowedRoutes);
     }
   }, [pathname])
 
-  const DesktopSidebar = () => (
-    <motion.aside
-      initial={{ x: -100, opacity: 0 }}
-      animate={{ x: 0, opacity: 1, width: isHovered ? 220 : 60 }}
-      transition={{ duration: 0.3 }}
+ const DesktopSidebar = () => (
+    <aside
+      className="hidden lg:block fixed left-0 top-[60px] bottom-0 bg-[#0d3b66] text-white overflow-hidden z-40 transition-all duration-300"
+      style={{ width: isHovered ? '220px' : '60px' }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="hidden lg:block fixed left-0 top-[60px] bottom-0 bg-[#0d3b66] text-white overflow-hidden z-40"
     >
       <nav className="flex-1 p-3 pt-6">
         {menuItems.map((item) => (
-          <motion.button
-           key={`${item.key}-${item.path}`}
-            whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.2)" }}
-            whileTap={{ scale: 0.98 }}
-            transition={{ duration: 0.2 }}
+          <button
+            key={`${item.key}-${item.path}`}
             onClick={() => handleNavigation(item.path)}
-            className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors mb-2 ${
+            className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors mb-2 group ${
               pathname === item.path ? "bg-white/20" : "bg-white/10 hover:bg-white/20"
             }`}
           >
             <item.icon className="h-5 w-5 flex-shrink-0" />
-            <motion.span
-              initial={{ opacity: 0 }}
-              animate={{ opacity: isHovered ? 1 : 0 }}
-              transition={{ duration: 0.2 }}
-              className="font-medium whitespace-nowrap"
+            <span
+              className={`font-medium whitespace-nowrap transition-opacity duration-300 ${
+                isHovered ? 'opacity-100' : 'opacity-0'
+              }`}
             >
               {item.label}
-            </motion.span>
-          </motion.button>
+            </span>
+          </button>
         ))}
       </nav>
-    </motion.aside>
-  )
-
+    </aside>
+  );
   const MobileSidebar = () => (
     <AnimatePresence>
       {isMobileOpen && (
