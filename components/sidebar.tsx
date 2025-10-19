@@ -21,7 +21,7 @@ export default function Sidebar({ isMobileOpen = false, onClose }: SidebarProps)
     () => [
       { key: "dashboard", icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
       { key: "complaints", icon: FileText, label: "View Complaints", path: "/dashboard" },
-      { key: "register-complaint", icon: FilePlus, label: "Register Complaint", path: "/register-complaint" },
+      { key: "registercomplaint", icon: FilePlus, label: "Register Complaint", path: "/registercomplaint" },
       { key: "customers", icon: User, label: "Customer Master", path: "/masters/customers" },
       { key: "engineers", icon: Wrench, label: "Engineer Master", path: "/masters/engineers" },
       { key: "users", icon: Users, label: "User Master", path: "/masters/users" },
@@ -36,7 +36,7 @@ export default function Sidebar({ isMobileOpen = false, onClose }: SidebarProps)
     ],
     [],
   )
-
+console.log("allowedRoutes in sidebar:", allowedRoutes);
   const menuItems = useMemo(
     () => allItems.filter((it) => allowedRoutes.includes(it.key as any)),
     [allowedRoutes, allItems],

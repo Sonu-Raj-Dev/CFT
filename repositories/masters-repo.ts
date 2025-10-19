@@ -39,6 +39,6 @@ export async function fetchCustomers() {
   return apiGet<Customer[]>(CUSTOMERS_URL)
 }
 export async function fetchEngineers() {
-  debugger;
+
   return apiGet<Engineer[]>(ENGINEERS_URL)
 }

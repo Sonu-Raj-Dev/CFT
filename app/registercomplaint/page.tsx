@@ -18,6 +18,7 @@ import Sidebar from "@/components/sidebar"
 import Footer from "@/components/footer"
 
 export default function RegisterComplaintPage() {
+  debugger;
   const router = useRouter()
   const { addComplaint } = useComplaints()
   const { customers } = useMasterData()
@@ -27,6 +28,9 @@ export default function RegisterComplaintPage() {
   const [ripplePosition, setRipplePosition] = useState<{ x: number; y: number } | null>(null)
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>("")
 
+
+  const customersList = customers?.data?.map((x) => x.data) ?? [];
+console.log("customersList:", customersList);
   const [formData, setFormData] = useState({
     customerName: "",
     mobileNumber: "",
@@ -133,7 +137,7 @@ export default function RegisterComplaintPage() {
                         <SelectValue placeholder="Choose a customer" />
                       </SelectTrigger>
                       <SelectContent>
-                        {customers.map((c) => (
+                        {customersList?.map((c) => (
                           <SelectItem key={c.id} value={c.id}>
                             {c.name}
                           </SelectItem>

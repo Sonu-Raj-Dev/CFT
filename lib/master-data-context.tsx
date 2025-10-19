@@ -21,7 +21,7 @@ export type RoleType = "Admin" | "ComplaintManager"
 export type RouteKey =
   | "dashboard"
   | "complaints"
-  | "register-complaint"
+  | "registercomplaint"
   | "customers"
   | "engineers"
   | "users"
@@ -69,7 +69,7 @@ const STORAGE_KEYS = {
 const allRoutes: RouteKey[] = [
   "dashboard",
   "complaints",
-  "register-complaint",
+  "registercomplaint",
   "customers",
   "engineers",
   "users",

@@ -12,7 +12,7 @@ import { useMasterData, type Role, type RouteKey } from "@/lib/master-data-conte
 const routeOptions: { key: RouteKey; label: string }[] = [
   { key: "dashboard", label: "Dashboard" },
   { key: "complaints", label: "View Complaints" },
-  { key: "register-complaint", label: "Register Complaint" },
+  { key: "registercomplaint", label: "Register Complaint" },
   { key: "customers", label: "Customer Master" },
   { key: "engineers", label: "Engineer Master" },
   { key: "users", label: "User Master" },

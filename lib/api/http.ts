@@ -47,7 +47,7 @@ export async function apiGets<T>(path: string, body?: unknown, init?: RequestIni
 }
 export async function apiGet<T>(path: string, init?: RequestInit) {
   const url = withBase(path)
-  debugger;
+
  // const t = withTimeout()
   try {
     const res = await fetch(url, {
@@ -56,7 +56,7 @@ export async function apiGet<T>(path: string, init?: RequestInit) {
      headers: { "Content-Type": "application/json", Accept: "application/json", ...(init?.headers || {}) },
     //body: body ? JSON.stringify(body) : undefined,
     })
-    debugger;
+
     return handle<T>(res)
   } catch (e: any) {
     if (e?.name === "AbortError") throw new Error("Request timed out")

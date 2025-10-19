@@ -87,7 +87,7 @@ export function AuthPermissionsProvider({ children }: { children: ReactNode }) {
     const allowed: RouteKey[] = [
       "dashboard",
       "complaints",
-      "register-complaint",
+      "registercomplaint",
       "customers",
       "engineers",
       "users",
