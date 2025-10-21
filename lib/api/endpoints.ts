@@ -20,6 +20,8 @@ export const COMPLAINTS_URL = "/api/Complaint/GetAllComplaints"
 export const CREATE_COMPLAINT_URL = "/api/Complaint/Create"
 export const ASSIGN_ENGINEER_URL = "/api/Complaint/AssignEngineer"
 
+
+export const DELETE_COMPLAINT_URL = "/api/Complaint/Delete"
 // Aliases for expected import names
 export const COMPLAINTS_LIST_URL = COMPLAINTS_URL
 export const COMPLAINT_CREATE_URL = CREATE_COMPLAINT_URL

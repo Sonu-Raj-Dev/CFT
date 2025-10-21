@@ -1,7 +1,7 @@
 "use client"
 
 import { apiGet, apiPost,apiGets } from "@/lib/api/http"
-import { COMPLAINTS_URL, CREATE_COMPLAINT_URL, ASSIGN_ENGINEER_URL } from "@/lib/api/endpoints"
+import { COMPLAINTS_URL, CREATE_COMPLAINT_URL, ASSIGN_ENGINEER_URL,DELETE_COMPLAINT_URL } from "@/lib/api/endpoints"
 
 export type Complaint = {
   id: string
@@ -27,6 +27,9 @@ export async function fetchComplaints(payload: ComplaintQuery): Promise<Complain
 
 export async function createComplaint(payload: Omit<Complaint, "id" | "status">) {
   return apiPost<Complaint>(CREATE_COMPLAINT_URL, payload)
+}
+export async function deleteComplaint(complaintId: string) {
+  return apiPost<Complaint>(DELETE_COMPLAINT_URL, { id: complaintId })
 }
 
 export async function assignEngineer(complaintId: string, engineerId: string) {

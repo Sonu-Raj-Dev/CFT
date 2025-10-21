@@ -1,13 +1,14 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import { createComplaint, fetchComplaints, assignEngineer } from "@/repositories/complaints-repo"
+import { createComplaint, fetchComplaints, assignEngineer,deleteComplaint } from "@/repositories/complaints-repo"
 import type { Complaint } from "@/repositories/complaints-repo"
 
 interface ComplaintContextType {
   complaints: Complaint[]
   addComplaint: (complaint: Omit<Complaint, "id" | "status">) => Promise<void>
   updateComplaint: (id: string, updates: Partial<Complaint>) => Promise<void>
+  deleteComplaints: (id: string) => Promise<void>
 }
 
 const ComplaintContext = createContext<ComplaintContextType | undefined>(undefined)
@@ -49,6 +50,10 @@ export function ComplaintProvider({ children }: { children: ReactNode }) {
     const created = await createComplaint(complaint)
     setComplaints((prev) => [created, ...prev])
   }
+  const deleteComplaints = async (complaintId: string) => {
+    await deleteComplaint(complaintId)
+    setComplaints((prev) => prev.filter((c) => c.id !== complaintId))
+  }
 
   const updateComplaint = async (id: string, updates: Partial<Complaint>) => {
     if (updates.engineerId) {
@@ -61,7 +66,7 @@ export function ComplaintProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <ComplaintContext.Provider value={{ complaints, addComplaint, updateComplaint }}>
+    <ComplaintContext.Provider value={{ complaints, addComplaint, updateComplaint ,deleteComplaints}}>
       {children}
     </ComplaintContext.Provider>
   )

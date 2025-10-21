@@ -3,14 +3,62 @@
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Edit, Trash2, MoreVertical } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import type { Complaint } from "@/lib/types"
 
 interface ComplaintTableProps {
   complaints: Complaint[]
   onRowClick: (complaint: Complaint) => void
+  onEdit: (complaint: Complaint) => void
+  onDelete: (complaintId: string) => void
+  onStatusChange?: (complaintId: string, newStatus: string) => void
 }
 
-export default function ComplaintTable({ complaints, onRowClick }: ComplaintTableProps) {
+export default function ComplaintTable({ 
+  complaints, 
+  onRowClick, 
+  onEdit, 
+  onDelete,
+  onStatusChange 
+}: ComplaintTableProps) {
+  
+  const getStatusVariant = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'open':
+        return 'default'
+      case 'assigned':
+        return 'secondary'
+      case 'in progress':
+        return 'outline'
+      case 'resolved':
+        return 'success'
+      case 'closed':
+        return 'destructive'
+      default:
+        return 'default'
+    }
+  }
+
+  const handleDelete = (e: React.MouseEvent, complaintId: string) => {
+    e.stopPropagation()
+    if (confirm('Are you sure you want to delete this complaint?')) {
+      onDelete(complaintId)
+    }
+  }
+
+  const handleEdit = (e: React.MouseEvent, complaint: Complaint) => {
+    e.stopPropagation()
+    onEdit(complaint)
+  }
+
   return (
     <div className="p-4 md:p-8">
       <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
@@ -26,9 +74,9 @@ export default function ComplaintTable({ complaints, onRowClick }: ComplaintTabl
                     <TableHead className="font-semibold">Customer Name</TableHead>
                     <TableHead className="font-semibold">Complaint Details</TableHead>
                     <TableHead className="font-semibold">Mobile Number</TableHead>
-                    <TableHead className="font-semibold">Address</TableHead>
-                    <TableHead className="font-semibold">Email</TableHead>
+                    <TableHead className="font-semibold">Status</TableHead>
                     <TableHead className="font-semibold">Nature of Complaint</TableHead>
+                    <TableHead className="font-semibold text-center">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -45,12 +93,43 @@ export default function ComplaintTable({ complaints, onRowClick }: ComplaintTabl
                       <TableCell className="font-medium">{complaint.customerName}</TableCell>
                       <TableCell className="max-w-xs truncate">{complaint.complaintdetails}</TableCell>
                       <TableCell>{complaint.mobileNumber}</TableCell>
-                      <TableCell className="max-w-xs truncate">{complaint.address}</TableCell>
-                      <TableCell>{complaint.email}</TableCell>
+                      <TableCell>
+                        <Badge variant={getStatusVariant(complaint.status)} className="capitalize">
+                          {complaint.status || 'Open'}
+                        </Badge>
+                      </TableCell>
                       <TableCell>
                         <span className="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
                           {complaint.natureOfComplaint}
                         </span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex justify-center space-x-2">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={(e) => handleEdit(e, complaint)}>
+                                <Edit className="h-4 w-4 mr-2" />
+                                Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={(e) => handleDelete(e, complaint.id)}
+                                className="text-red-600"
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
                       </TableCell>
                     </motion.tr>
                   ))}
@@ -58,6 +137,7 @@ export default function ComplaintTable({ complaints, onRowClick }: ComplaintTabl
               </Table>
             </div>
 
+            {/* Mobile View */}
             <div className="md:hidden space-y-4">
               {complaints?.map((complaint, index) => (
                 <motion.div
@@ -71,9 +151,35 @@ export default function ComplaintTable({ complaints, onRowClick }: ComplaintTabl
                   <div className="space-y-3">
                     <div className="flex items-start justify-between">
                       <h3 className="font-semibold text-lg">{complaint.customerName}</h3>
-                      <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700">
-                        {complaint.natureOfComplaint}
-                      </span>
+                      <div className="flex items-center space-x-2">
+                        <Badge variant={getStatusVariant(complaint.status)} className="capitalize">
+                          {complaint.status || 'Open'}
+                        </Badge>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={(e) => handleEdit(e, complaint)}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={(e) => handleDelete(e, complaint.id)}
+                              className="text-red-600"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
 
                     <div className="space-y-2 text-sm">
@@ -86,8 +192,8 @@ export default function ComplaintTable({ complaints, onRowClick }: ComplaintTabl
                         <span className="ml-2 font-medium">{complaint.email}</span>
                       </div>
                       <div>
-                        <span className="text-muted-foreground">Address:</span>
-                        <span className="ml-2">{complaint.address}</span>
+                        <span className="text-muted-foreground">Nature:</span>
+                        <span className="ml-2 font-medium">{complaint.natureOfComplaint}</span>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Details:</span>
