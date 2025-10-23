@@ -30,6 +30,8 @@ export const COMPLAINT_ASSIGN_URL = ASSIGN_ENGINEER_URL;
 
 // Create Users
 export const USERS_CREATE_URL = "/api/UserMaster/Create";
+export const CUSTOMER_CREATE_URL = "/api/CustomerMaster/Create";
+export const ENGINEER_CREATE_URL = "/api/CustomerMaster/Create";
 
 // Helper to build absolute URLs
 export function withBase(path: string) {

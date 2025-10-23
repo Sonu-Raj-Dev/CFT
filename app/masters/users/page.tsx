@@ -35,10 +35,10 @@ export default function UserMasterPage() {
     address: "",
   });
 
-  // const usersList = useMemo(() => {
-  //   return users?.data?.map((x) => x.data) ?? [];
-  // }, [users]);
-  const usersList = users?.data?.map((x) => x.data) ?? [];
+  const usersList = useMemo(() => {
+    return users?.data?.map((x) => x.data) ?? [];
+  }, [users]);
+  // const usersList = users?.data?.map((x) => x.data) ?? [];
   console.log(`userLissstrtt`, usersList);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -52,7 +52,9 @@ export default function UserMasterPage() {
     ) {
       return;
     }
-    addUser(form);
+
+    const payload = { ...form, IsActive: true };
+    addUser(payload);
     setForm({ name: "", email: "", mobile: "", password: "", address: "" });
   };
 
