@@ -1,6 +1,6 @@
 "use client"
 
-import { apiGet } from "@/lib/api/http"
+import { apiGet, apiPost } from "@/lib/api/http"
 import {
   USERS_URL,
   ROLES_URL,
@@ -9,6 +9,7 @@ import {
   ROLE_PERMISSIONS_URL,
   CUSTOMERS_URL,
   ENGINEERS_URL,
+  USERS_CREATE_URL
 } from "@/lib/api/endpoints"
 
 export type User = { id: string; name: string; email: string; mobile?: string; address?: string }
@@ -41,4 +42,8 @@ export async function fetchCustomers() {
 export async function fetchEngineers() {
 
   return apiGet<Engineer[]>(ENGINEERS_URL)
+}
+
+export async function createUsers(payload: Omit<User, "id">) {
+  return apiPost<User>(USERS_CREATE_URL, payload)
 }

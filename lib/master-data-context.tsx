@@ -14,6 +14,7 @@ import {
   type RolePermissions as RPMap,
   type User,
   type UserRoles as URMap,
+  createUsers,
 } from "@/repositories/masters-repo"
 
 export type AppUser = { id: string; name: string; email: string; mobile: string; password: string; address: string }
@@ -139,6 +140,10 @@ export function MasterDataProvider({ children }: { children: ReactNode }) {
   }
 
   const addUser = () => {
+    const addUsers = async (user: Omit<User, "id">) => {
+      const created = await createUsers(user)
+      setUsers((prev) => [created, ...prev])
+    }
     throw new Error("addUser API not implemented")
   }
   const updateUser = () => {
@@ -184,7 +189,7 @@ export function MasterDataProvider({ children }: { children: ReactNode }) {
 }
 
 export function useMasterData() {
- 
+
   const ctx = useContext(MasterDataContext)
   if (!ctx) throw new Error("useMasterData must be used within MasterDataProvider")
   return ctx

@@ -27,6 +27,10 @@ export const COMPLAINTS_LIST_URL = COMPLAINTS_URL
 export const COMPLAINT_CREATE_URL = CREATE_COMPLAINT_URL
 export const COMPLAINT_ASSIGN_URL = ASSIGN_ENGINEER_URL
 
+
+// Create Users
+export const USERS_CREATE_URL = "/api/UserMaster/CreateUser"
+
 // Helper to build absolute URLs
 export function withBase(path: string) {
   if (!BASE_URL) return path
