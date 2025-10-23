@@ -161,14 +161,15 @@ export function MasterDataProvider({ children }: { children: ReactNode }) {
   };
 
   const addUser = async (user: any) => {
-    // const addUsers = async (user: Omit<User, "id">) => {
-    const created = await createUsers(user);
-    console.log(`useruser`, created);
+    try {
+      const created = await createUsers(user);
+      console.log(`useruser`, created);
 
-    // debugger;
-    setUsers((prev) => [created?.data, ...prev?.data]);
-    // }
-    throw new Error("addUser API not implemented");
+      // debugger;
+      setUsers((prev) => [created?.data, ...prev?.data]);
+    } catch (error) {
+      throw new Error("addUser API not implemented");
+    }
   };
   const updateUser = () => {
     throw new Error("updateUser API not implemented");
