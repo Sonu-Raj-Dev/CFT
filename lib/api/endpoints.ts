@@ -33,6 +33,11 @@ export const USERS_CREATE_URL = "/api/UserMaster/Create";
 export const CUSTOMER_CREATE_URL = "/api/CustomerMaster/Create";
 export const ENGINEER_CREATE_URL = "/api/CustomerMaster/Create";
 
+
+// Create User Permissions
+export const USER_PERMISSIONS_CREATE_URL ="/api/UserMaster/CreateUserRoleMapping";
+
+
 // Helper to build absolute URLs
 export function withBase(path: string) {
   if (!BASE_URL) return path;

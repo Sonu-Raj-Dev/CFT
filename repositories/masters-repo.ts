@@ -12,6 +12,7 @@ import {
   USERS_CREATE_URL,
   CUSTOMER_CREATE_URL,
   ENGINEER_CREATE_URL,
+  USER_PERMISSIONS_CREATE_URL
 } from "@/lib/api/endpoints";
 
 export type User = {
@@ -80,4 +81,8 @@ export async function fetchPermissions() {
 }
 export async function fetchRolePermissions() {
   return apiGet<RolePermissions>(ROLE_PERMISSIONS_URL);
+}
+
+export async function CreateRolePermissions(payload: any) {
+  return apiPost<RolePermissions>(USER_PERMISSIONS_CREATE_URL, payload);
 }
