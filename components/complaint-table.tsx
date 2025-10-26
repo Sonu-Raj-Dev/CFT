@@ -22,15 +22,15 @@ interface ComplaintTableProps {
   onStatusChange?: (complaintId: string, newStatus: string) => void
 }
 
-export default function ComplaintTable({ 
-  complaints, 
-  onRowClick, 
-  onEdit, 
+export default function ComplaintTable({
+  complaints,
+  onRowClick,
+  onEdit,
   onDelete,
-  onStatusChange 
+  onStatusChange
 }: ComplaintTableProps) {
-  console.log("complaints",complaints);
-  
+  console.log("complaints", complaints);
+
   const getStatusVariant = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'open':
@@ -38,7 +38,7 @@ export default function ComplaintTable({
       case 'assigned':
         return 'secondary'
       case 'completed':
-        return 'destructive'
+        return 'success'
       default:
         return 'default'
     }
@@ -92,7 +92,13 @@ export default function ComplaintTable({
                       <TableCell className="max-w-xs truncate">{complaint.complaintdetails}</TableCell>
                       <TableCell>{complaint.mobileNumber}</TableCell>
                       <TableCell>
-                        <Badge variant={getStatusVariant(complaint.statusName)} className="capitalize">
+                        <Badge
+                          variant={getStatusVariant(complaint.statusName)}
+                          className={`capitalize ${complaint.statusName?.toLowerCase() === 'completed'
+                              ? 'bg-green-500 hover:bg-green-600'
+                              : ''
+                            }`}
+                        >
                           {complaint.statusName || ' '}
                         </Badge>
                       </TableCell>
@@ -119,7 +125,7 @@ export default function ComplaintTable({
                                 <Edit className="h-4 w-4 mr-2" />
                                 Edit
                               </DropdownMenuItem>
-                              <DropdownMenuItem 
+                              <DropdownMenuItem
                                 onClick={(e) => handleDelete(e, complaint.id)}
                                 className="text-red-600"
                               >
@@ -169,7 +175,7 @@ export default function ComplaintTable({
                               <Edit className="h-4 w-4 mr-2" />
                               Edit
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={(e) => handleDelete(e, complaint.id)}
                               className="text-red-600"
                             >

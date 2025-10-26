@@ -10,14 +10,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button"
 import type { Complaint } from "@/lib/types"
 import { useMasterData } from "@/lib/master-data-context"
-import { assignEngineer } from "@/repositories/complaints-repo"
+import { assignEngineer, createComplaint } from "@/repositories/complaints-repo"
 
 interface ComplaintModalProps {
-  complaint: Complaint
+  complaint?: Complaint
   onClose: () => void
   onAssign: (complaintId: string, engineer: string) => void
   onUpdate?: (complaintId: string, updatedData: Partial<Complaint>) => void
-  mode?: "view" | "edit"
+  onCreate?: (newComplaint: Complaint) => void
+  mode?: "view" | "edit" | "create"
 }
 
 export default function ComplaintModal({
@@ -25,21 +26,39 @@ export default function ComplaintModal({
   onClose,
   onAssign,
   onUpdate,
+  onCreate,
   mode = "view"
 }: ComplaintModalProps) {
   const [selectedEngineer, setSelectedEngineer] = useState<string>("")
   const [showSuccess, setShowSuccess] = useState(false)
-  const [isEditing, setIsEditing] = useState(mode === "edit")
-  const [formData, setFormData] = useState<Complaint>(complaint)
+  const [isEditing, setIsEditing] = useState(mode === "edit" || mode === "create")
+  const [formData, setFormData] = useState<Complaint>(complaint || getDefaultComplaint())
   const [isLoading, setIsLoading] = useState(false)
   const { engineers } = useMasterData()
 
+  // Default complaint for create mode
+  function getDefaultComplaint(): Complaint {
+    return {
+      id: "",
+      customerName: "",
+      mobileNumber: "",
+      email: "",
+      address: "",
+      natureOfComplaint: "",
+      complaintdetails: "",
+      statusName: "Draft", // Set default status name
+      statusId: 1, // Set default status ID to 1 (Draft)
+      engineerId: "",
+      assignedEngineer: ""
+    }
+  }
+
   console.log("Complaint Modal - complaint prop:", complaint);
-  
+
   // Create a mapping between status names and their IDs
   const statusMapping = {
     "Draft": "1",
-    "Resolution Pending": "2", 
+    "Resolution Pending": "2",
     "Completed": "3"
   };
 
@@ -50,12 +69,29 @@ export default function ComplaintModal({
     "3": "Completed"
   };
 
-  useEffect(() => {
-    setFormData(complaint)
-    setIsEditing(mode === "edit")
+  // Status ID to name mapping
+  const statusIdToName = {
+    1: "Draft",
+    2: "Resolution Pending",
+    3: "Completed"
+  };
 
-    if (complaint.assignedEngineer) {
-      setSelectedEngineer(complaint.assignedEngineer)
+  useEffect(() => {
+    if (complaint) {
+      // Ensure statusName is set based on statusId if it's missing
+      const updatedComplaint = { ...complaint };
+      if (!updatedComplaint.statusName && updatedComplaint.statusId) {
+        updatedComplaint.statusName = statusIdToName[updatedComplaint.statusId as keyof typeof statusIdToName] || "Draft";
+      }
+      setFormData(updatedComplaint);
+    } else {
+      setFormData(getDefaultComplaint())
+    }
+    setIsEditing(mode === "edit" || mode === "create")
+
+    if (complaint?.engineerId) {
+      console.log("Setting selected engineer to:", complaint.engineerId);
+      setSelectedEngineer(complaint.engineerId)
     } else {
       setSelectedEngineer("")
     }
@@ -72,17 +108,26 @@ export default function ComplaintModal({
     }))
   }
 
-  // Handle status change - convert ID to status name
+  // Handle status change - convert ID to status name and set both fields
   const handleStatusChange = (statusId: string) => {
-    const statusName = reverseStatusMapping[statusId as keyof typeof reverseStatusMapping] || "Draft";
+    const statusIdNum = parseInt(statusId);
+    const statusName = reverseStatusMapping[statusId as keyof typeof reverseStatusMapping];
+
     setFormData(prev => ({
       ...prev,
+      statusId: statusIdNum,
       statusName: statusName
     }))
   }
 
   // Get current status ID for the dropdown value
   const getCurrentStatusId = () => {
+    // If we have statusId, use it directly
+    if (formData.statusId) {
+      return formData.statusId.toString();
+    }
+
+    // Fallback to statusName mapping
     return statusMapping[formData.statusName as keyof typeof statusMapping] || "1";
   }
 
@@ -124,23 +169,90 @@ export default function ComplaintModal({
     }
   }
 
-  const handleSave = () => {
-    if (onUpdate) {
-      onUpdate(complaint.id, formData)
-      setShowSuccess(true)
-      setTimeout(() => {
-        setIsEditing(false)
-        setShowSuccess(false)
-      }, 1000)
+  // Handle Save for both create and edit modes
+  const handleSave = async () => {
+    // Validate required fields
+    if (!formData.customerName || !formData.mobileNumber || !formData.email ||
+      !formData.address || !formData.natureOfComplaint || !formData.complaintdetails) {
+      alert("Please fill in all required fields")
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      debugger;
+      if (mode === "create") {
+        // Create new complaint - ensure statusId is set
+        const newComplaintData = {
+          ...formData,
+          statusId: formData.statusId || 1, // Ensure statusId is set
+          statusName: formData.statusName || "Draft", // Ensure statusName is set
+          id: `comp-${Date.now()}`, // Generate temporary ID
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+
+        console.log("Creating complaint with data:", newComplaintData);
+
+        // Call createComplaint API
+        const response = await createComplaint(newComplaintData)
+
+        setShowSuccess(true)
+
+        // Call onCreate callback if provided
+        if (onCreate) {
+          onCreate(response.data) // Assuming the API returns the created complaint
+        }
+
+        setTimeout(() => {
+          onClose()
+        }, 1000)
+      } else {
+        // Update existing complaint - ensure statusId is set
+        const updatedComplaintData = {
+          ...formData,
+          statusId: formData.statusId || 1, // Ensure statusId is set
+          statusName: formData.statusName || "Draft", // Ensure statusName is set
+          updatedAt: new Date().toISOString()
+        }
+
+        console.log("Updating complaint with data:", updatedComplaintData);
+
+        // Call updateComplaint API
+        const response = await createComplaint(updatedComplaintData)
+
+        setShowSuccess(true)
+
+        // Call onUpdate callback if provided
+        if (onUpdate) {
+          onUpdate(complaint.id, response.data) // Assuming the API returns the updated complaint
+        }
+
+        setTimeout(() => {
+          setIsEditing(false)
+          setShowSuccess(false)
+        }, 1000)
+      }
+    } catch (error) {
+      console.error(`Error ${mode === 'create' ? 'creating' : 'updating'} complaint:`, error)
+      alert(`Failed to ${mode === 'create' ? 'create' : 'update'} complaint. Please try again.`)
+    } finally {
+      setIsLoading(false)
     }
   }
 
   const handleCancel = () => {
     if (isEditing) {
-      setFormData(complaint)
-      setIsEditing(false)
-      if (complaint.assignedEngineer) {
-        setSelectedEngineer(complaint.assignedEngineer)
+      if (mode === "create") {
+        // If in create mode, just close the modal
+        onClose()
+      } else {
+        // If in edit mode, reset form data
+        setFormData(complaint)
+        setIsEditing(false)
+        if (complaint.assignedEngineer) {
+          setSelectedEngineer(complaint.assignedEngineer)
+        }
       }
     } else {
       onClose()
@@ -148,10 +260,23 @@ export default function ComplaintModal({
   }
 
   const getSuccessMessage = () => {
-    if (isEditing) {
+    if (mode === "create") {
+      return "Complaint created successfully!"
+    } else if (isEditing) {
       return "Complaint updated successfully!"
     }
     return "Engineer assigned successfully!"
+  }
+
+  const getTitle = () => {
+    switch (mode) {
+      case "create":
+        return "Create New Complaint"
+      case "edit":
+        return "Edit Complaint"
+      default:
+        return "Complaint Details"
+    }
   }
 
   return (
@@ -164,21 +289,9 @@ export default function ComplaintModal({
           transition={{ duration: 0.3, type: "spring", stiffness: 300, damping: 30 }}
         >
           <DialogHeader>
-            <div className="flex justify-between items-center">
-              <DialogTitle className="text-xl md:text-2xl font-bold">
-                {isEditing ? "Edit Complaint" : "Complaint Details"}
-              </DialogTitle>
-              {!isEditing && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsEditing(true)}
-                  className="bg-blue-500 text-white hover:bg-blue-600"
-                >
-                  Edit
-                </Button>
-              )}
-            </div>
+            <DialogTitle className="text-xl md:text-2xl font-bold">
+              {getTitle()}
+            </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 md:space-y-6 py-4">
@@ -259,7 +372,7 @@ export default function ComplaintModal({
               <div className="space-y-2">
                 <Label htmlFor="status">Status</Label>
                 <Select
-                  value={getCurrentStatusId()}
+                  value={formData.statusId?.toString()} // Convert statusId to string for Select
                   onValueChange={handleStatusChange}
                   disabled={!isEditing}
                 >
@@ -288,11 +401,11 @@ export default function ComplaintModal({
               />
             </div>
 
-            {!isEditing && (
+            {!isEditing && complaint && (
               <div className="space-y-2">
                 <Label htmlFor="engineer">Assign Engineer</Label>
                 <Select value={selectedEngineer} onValueChange={setSelectedEngineer}>
-                  <SelectTrigger id="engineer">
+                  <SelectTrigger id="engineer" disabled={selectedEngineer > 0}>
                     <SelectValue placeholder={
                       selectedEngineer
                         ? engineersList.find(e => e.id === selectedEngineer)?.name || "Select an engineer"
@@ -307,9 +420,9 @@ export default function ComplaintModal({
                     ))}
                   </SelectContent>
                 </Select>
-                {selectedEngineer && complaint.assignedEngineer && (
+                {selectedEngineer && complaint.engineerId > 0 && (
                   <p className="text-sm text-muted-foreground mt-1">
-                    Currently assigned to: {engineersList.find(e => e.id === complaint.assignedEngineer)?.name}
+                    Currently assigned to: {engineersList.find(e => e.id === complaint.engineerId)?.name}
                   </p>
                 )}
               </div>
@@ -344,21 +457,24 @@ export default function ComplaintModal({
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
                   <Button
                     onClick={handleSave}
+                    disabled={isLoading}
                     className="w-full sm:w-auto bg-gradient-to-r from-green-500 to-emerald-400 hover:from-green-600 hover:to-emerald-500"
                   >
-                    Save Changes
+                    {isLoading ? "Saving..." : (mode === "create" ? "Create Complaint" : "Save Changes")}
                   </Button>
                 </motion.div>
               ) : (
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
-                  <Button
-                    onClick={handleSubmit}
-                    disabled={isLoading || !selectedEngineer}
-                    className="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500"
-                  >
-                    {isLoading ? "Assigning..." : (selectedEngineer && complaint.assignedEngineer ? "Reassign Engineer" : "Assign Engineer")}
-                  </Button>
-                </motion.div>
+                complaint && complaint.engineerId === 0 && (
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
+                    <Button
+                      onClick={handleSubmit}
+                      disabled={isLoading || !selectedEngineer}
+                      className="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500"
+                    >
+                      {isLoading ? "Assigning..." : (selectedEngineer && complaint.assignedEngineer ? "Reassign Engineer" : "Assign Engineer")}
+                    </Button>
+                  </motion.div>
+                )
               )}
             </div>
           </div>
