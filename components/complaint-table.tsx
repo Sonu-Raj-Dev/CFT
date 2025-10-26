@@ -29,6 +29,7 @@ export default function ComplaintTable({
   onDelete,
   onStatusChange 
 }: ComplaintTableProps) {
+  console.log("complaints",complaints);
   
   const getStatusVariant = (status: string) => {
     switch (status?.toLowerCase()) {
@@ -36,11 +37,7 @@ export default function ComplaintTable({
         return 'default'
       case 'assigned':
         return 'secondary'
-      case 'in progress':
-        return 'outline'
-      case 'resolved':
-        return 'success'
-      case 'closed':
+      case 'completed':
         return 'destructive'
       default:
         return 'default'
@@ -76,6 +73,7 @@ export default function ComplaintTable({
                     <TableHead className="font-semibold">Mobile Number</TableHead>
                     <TableHead className="font-semibold">Status</TableHead>
                     <TableHead className="font-semibold">Nature of Complaint</TableHead>
+                    <TableHead className="font-semibold">Assigned Engineer</TableHead>
                     <TableHead className="font-semibold text-center">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -90,12 +88,12 @@ export default function ComplaintTable({
                       className="cursor-pointer hover:bg-blue-50 transition-all border-b"
                       whileHover={{ scale: 1.01, boxShadow: "0 4px 16px rgba(13, 59, 102, 0.15)" }}
                     >
-                      <TableCell className="font-medium">{complaint.customerName}</TableCell>
+                      <TableCell className="font-medium">{complaint?.customerName}</TableCell>
                       <TableCell className="max-w-xs truncate">{complaint.complaintdetails}</TableCell>
                       <TableCell>{complaint.mobileNumber}</TableCell>
                       <TableCell>
-                        <Badge variant={getStatusVariant(complaint.status)} className="capitalize">
-                          {complaint.status || 'Open'}
+                        <Badge variant={getStatusVariant(complaint.statusName)} className="capitalize">
+                          {complaint.statusName || ' '}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -103,6 +101,7 @@ export default function ComplaintTable({
                           {complaint.natureOfComplaint}
                         </span>
                       </TableCell>
+                      <TableCell>{complaint.assignedEngineer || ''}</TableCell>
                       <TableCell>
                         <div className="flex justify-center space-x-2">
                           <DropdownMenu>

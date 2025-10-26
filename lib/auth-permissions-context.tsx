@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
 import { useMasterData, type RouteKey, type Role } from "./master-data-context"
 import { login as apiLogin } from "@/repositories/auth-repo"
+import { de } from "date-fns/locale"
 
 export interface SessionUser {
   id: string
@@ -79,21 +80,21 @@ export function AuthPermissionsProvider({ children }: { children: ReactNode }) {
   function permissionNameToRouteKey(name: string): RouteKey | null {
     const key = (name || "")
       .trim()
-      .replace(/([a-z])([A-Z])/g, "$1-$2") // RoleMapping -> Role-Mapping
-      .replace(/\s+/g, "-")
-      .toLowerCase()
+     // .replace(/([a-z])([A-Z])/g, "$1-$2") // RoleMapping -> Role-Mapping
+     // .replace(/\s+/g, "-")
+      //.toLowerCase()
 
     // whitelist to valid RouteKey values used by Sidebar
     const allowed: RouteKey[] = [
-      "dashboard",
-      "complaints",
-      "registercomplaint",
-      "customers",
-      "engineers",
-      "users",
-      "role-mapping",
-      "permission-mapping",
-      "profile",
+      "Dashboard",
+      "Complaints",
+      "Customers",
+      "Engineers",
+      "Users",
+      "RoleMapping",
+      "PermissionMapping",
+      "Profile",
+      "registercomplaint"
     ]
     return allowed.includes(key as RouteKey) ? (key as RouteKey) : null
   }
@@ -103,7 +104,9 @@ export function AuthPermissionsProvider({ children }: { children: ReactNode }) {
     // Prefer direct permissions from API if present
     if (Array.isArray(user.permissionNames) && user.permissionNames.length > 0) {
       const set = new Set<RouteKey>()
+   
       user.permissionNames.forEach((p) => {
+       
         const rk = permissionNameToRouteKey(p)
         if (rk) set.add(rk)
       })

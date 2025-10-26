@@ -1,6 +1,6 @@
 "use client";
 
-import { apiGet, apiPost } from "@/lib/api/http";
+import { apiGet, apiGets, apiPost } from "@/lib/api/http";
 import {
   USERS_URL,
   ROLES_URL,
@@ -12,7 +12,10 @@ import {
   USERS_CREATE_URL,
   CUSTOMER_CREATE_URL,
   ENGINEER_CREATE_URL,
-  USER_PERMISSIONS_CREATE_URL
+  USER_PERMISSIONS_CREATE_URL,
+  USER_PERMISSIONS_BY_ROLE_URL,
+  SAVE_PERMISSIONS_BY_ROLE_URL,
+  CREATE_ENGINEERS_URL
 } from "@/lib/api/endpoints";
 
 export type User = {
@@ -32,10 +35,9 @@ export type Customer = {
   email?: string;
 };
 export type Engineer = {
-  engineerId: string;
+  id: string;
   name: string;
-  mobile?: string;
-  address?: string;
+  mobilenumber?: string;
   email?: string;
 };
 
@@ -63,8 +65,8 @@ export async function createCustomer(payload: Omit<User, "id">) {
 export async function fetchEngineers() {
   return apiGet<Engineer[]>(ENGINEERS_URL);
 }
-export async function createEngineer(payload: Omit<User, "id">) {
-  return apiPost<User>(ENGINEER_CREATE_URL, payload);
+export async function createEngineer(payload:any) {
+  return apiPost<Engineer>(CREATE_ENGINEERS_URL, payload);
 }
 
 //Roles
@@ -85,4 +87,11 @@ export async function fetchRolePermissions() {
 
 export async function CreateRolePermissions(payload: any) {
   return apiPost<RolePermissions>(USER_PERMISSIONS_CREATE_URL, payload);
+}
+export async function fetchPermissionsByRole(payload: any) {
+  return apiGets<RolePermissions>(USER_PERMISSIONS_BY_ROLE_URL, payload);
+}
+
+export async function SavePermissionsByRole(payload: any) {
+  return apiPost<RolePermissions>(SAVE_PERMISSIONS_BY_ROLE_URL, payload);
 }

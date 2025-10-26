@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button"
 import type { Complaint } from "@/lib/types"
 import { useMasterData } from "@/lib/master-data-context"
+import { assignEngineer } from "@/repositories/complaints-repo"
 
 interface ComplaintModalProps {
   complaint: Complaint
@@ -19,26 +20,50 @@ interface ComplaintModalProps {
   mode?: "view" | "edit"
 }
 
-export default function ComplaintModal({ 
-  complaint, 
-  onClose, 
-  onAssign, 
+export default function ComplaintModal({
+  complaint,
+  onClose,
+  onAssign,
   onUpdate,
-  mode = "view" 
+  mode = "view"
 }: ComplaintModalProps) {
   const [selectedEngineer, setSelectedEngineer] = useState<string>("")
   const [showSuccess, setShowSuccess] = useState(false)
   const [isEditing, setIsEditing] = useState(mode === "edit")
   const [formData, setFormData] = useState<Complaint>(complaint)
+  const [isLoading, setIsLoading] = useState(false)
   const { engineers } = useMasterData()
+
+  console.log("Complaint Modal - complaint prop:", complaint);
+  
+  // Create a mapping between status names and their IDs
+  const statusMapping = {
+    "Draft": "1",
+    "Resolution Pending": "2", 
+    "Completed": "3"
+  };
+
+  // Reverse mapping for display
+  const reverseStatusMapping = {
+    "1": "Draft",
+    "2": "Resolution Pending",
+    "3": "Completed"
+  };
 
   useEffect(() => {
     setFormData(complaint)
     setIsEditing(mode === "edit")
+
+    if (complaint.assignedEngineer) {
+      setSelectedEngineer(complaint.assignedEngineer)
+    } else {
+      setSelectedEngineer("")
+    }
   }, [complaint, mode])
 
   console.log("Engineers List:", engineers);
   const engineersList = engineers?.data?.map((x) => x.data) ?? [];
+  console.log("Engineers List after mapping:", engineersList);
 
   const handleInputChange = (field: keyof Complaint, value: string) => {
     setFormData(prev => ({
@@ -47,9 +72,22 @@ export default function ComplaintModal({
     }))
   }
 
-  const handleSubmit = () => {
+  // Handle status change - convert ID to status name
+  const handleStatusChange = (statusId: string) => {
+    const statusName = reverseStatusMapping[statusId as keyof typeof reverseStatusMapping] || "Draft";
+    setFormData(prev => ({
+      ...prev,
+      statusName: statusName
+    }))
+  }
+
+  // Get current status ID for the dropdown value
+  const getCurrentStatusId = () => {
+    return statusMapping[formData.statusName as keyof typeof statusMapping] || "1";
+  }
+
+  const handleSubmit = async () => {
     if (isEditing) {
-      // Update complaint
       if (onUpdate) {
         onUpdate(complaint.id, formData)
         setShowSuccess(true)
@@ -58,16 +96,31 @@ export default function ComplaintModal({
         }, 1000)
       }
     } else {
-      // Assign engineer (original functionality)
       if (!selectedEngineer) {
         alert("Please select an engineer before submitting")
         return
       }
 
-      setShowSuccess(true)
-      setTimeout(() => {
-        onAssign(complaint.id, selectedEngineer)
-      }, 1000)
+      setIsLoading(true)
+      try {
+        const payload = {
+          Id: complaint.id,
+          engineerId: selectedEngineer
+        }
+
+        const response = await assignEngineer(payload)
+        setShowSuccess(true)
+
+        setTimeout(() => {
+          onAssign(complaint.id, selectedEngineer)
+          setIsLoading(false)
+        }, 1000)
+
+      } catch (error) {
+        console.error("Error assigning engineer:", error)
+        alert("Failed to assign engineer. Please try again.")
+        setIsLoading(false)
+      }
     }
   }
 
@@ -84,8 +137,11 @@ export default function ComplaintModal({
 
   const handleCancel = () => {
     if (isEditing) {
-      setFormData(complaint) // Reset form data
+      setFormData(complaint)
       setIsEditing(false)
+      if (complaint.assignedEngineer) {
+        setSelectedEngineer(complaint.assignedEngineer)
+      }
     } else {
       onClose()
     }
@@ -203,19 +259,19 @@ export default function ComplaintModal({
               <div className="space-y-2">
                 <Label htmlFor="status">Status</Label>
                 <Select
-                  value={formData.status || "Open"}
-                  onValueChange={(value) => handleInputChange('status', value)}
+                  value={getCurrentStatusId()}
+                  onValueChange={handleStatusChange}
                   disabled={!isEditing}
                 >
                   <SelectTrigger id="status">
-                    <SelectValue placeholder="Select status" />
+                    <SelectValue placeholder="Select status">
+                      {formData.statusName || "Draft"}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Open">Open</SelectItem>
-                    <SelectItem value="Assigned">Assigned</SelectItem>
-                    <SelectItem value="In Progress">In Progress</SelectItem>
-                    <SelectItem value="Resolved">Resolved</SelectItem>
-                    <SelectItem value="Closed">Closed</SelectItem>
+                    <SelectItem value="1">Draft</SelectItem>
+                    <SelectItem value="2">Resolution Pending</SelectItem>
+                    <SelectItem value="3">Completed</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -237,16 +293,25 @@ export default function ComplaintModal({
                 <Label htmlFor="engineer">Assign Engineer</Label>
                 <Select value={selectedEngineer} onValueChange={setSelectedEngineer}>
                   <SelectTrigger id="engineer">
-                    <SelectValue placeholder="Select an engineer" />
+                    <SelectValue placeholder={
+                      selectedEngineer
+                        ? engineersList.find(e => e.id === selectedEngineer)?.name || "Select an engineer"
+                        : "Select an engineer"
+                    } />
                   </SelectTrigger>
                   <SelectContent>
                     {engineersList.map((e) => (
-                      <SelectItem key={e.engineerId} value={e.engineerId}>
+                      <SelectItem key={e.id} value={e.id}>
                         {e.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                {selectedEngineer && complaint.assignedEngineer && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Currently assigned to: {engineersList.find(e => e.id === complaint.assignedEngineer)?.name}
+                  </p>
+                )}
               </div>
             )}
 
@@ -265,15 +330,16 @@ export default function ComplaintModal({
 
             <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={handleCancel}
+                  disabled={isLoading}
                   className="w-full sm:w-auto bg-transparent"
                 >
                   {isEditing ? "Cancel" : "Close"}
                 </Button>
               </motion.div>
-              
+
               {isEditing ? (
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
                   <Button
@@ -287,9 +353,10 @@ export default function ComplaintModal({
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
                   <Button
                     onClick={handleSubmit}
+                    disabled={isLoading || !selectedEngineer}
                     className="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500"
                   >
-                    Assign Engineer
+                    {isLoading ? "Assigning..." : (selectedEngineer && complaint.assignedEngineer ? "Reassign Engineer" : "Assign Engineer")}
                   </Button>
                 </motion.div>
               )}

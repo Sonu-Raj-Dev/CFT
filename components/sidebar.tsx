@@ -19,20 +19,20 @@ export default function Sidebar({ isMobileOpen = false, onClose }: SidebarProps)
 
   const allItems = useMemo(
     () => [
-      { key: "dashboard", icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
-      { key: "complaints", icon: FileText, label: "View Complaints", path: "/dashboard" },
+      { key: "Dashboard", icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
+      { key: "Complaints", icon: FileText, label: "View Complaints", path: "/dashboard" },
       { key: "registercomplaint", icon: FilePlus, label: "Register Complaint", path: "/registercomplaint" },
-      { key: "customers", icon: User, label: "Customer Master", path: "/masters/customers" },
-      { key: "engineers", icon: Wrench, label: "Engineer Master", path: "/masters/engineers" },
-      { key: "users", icon: Users, label: "User Master", path: "/masters/users" },
-      { key: "role-mapping", icon: Shield, label: "User Role Mapping", path: "/masters/role-mapping" },
+      { key: "Customers", icon: User, label: "Customer Master", path: "/masters/customers" },
+      { key: "Engineers", icon: Wrench, label: "Engineer Master", path: "/masters/engineers" },
+      { key: "Users", icon: Users, label: "User Master", path: "/masters/users" },
+      { key: "RoleMapping", icon: Shield, label: "User Role Mapping", path: "/masters/role-mapping" },
       {
-        key: "permission-mapping",
+        key: "PermissionMapping",
         icon: ShieldCheck,
         label: "Role Permission Mapping",
         path: "/masters/permission-mapping",
       },
-      { key: "profile", icon: User, label: "Profile", path: "/profile" },
+      { key: "Profile", icon: User, label: "Profile", path: "/profile" },
     ],
     [],
   )

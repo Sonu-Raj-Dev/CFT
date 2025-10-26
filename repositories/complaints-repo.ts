@@ -32,6 +32,6 @@ export async function deleteComplaint(complaintId: string) {
   return apiPost<Complaint>(DELETE_COMPLAINT_URL, { id: complaintId })
 }
 
-export async function assignEngineer(complaintId: string, engineerId: string) {
-  return apiPost<Complaint>(ASSIGN_ENGINEER_URL, { complaintId, engineerId })
+export async function assignEngineer(payload: any) {
+  return apiPost<Complaint>(ASSIGN_ENGINEER_URL, payload)
 }

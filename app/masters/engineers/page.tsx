@@ -28,14 +28,16 @@ export const dynamic = "force-dynamic";
 export default function EngineerMasterPage() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [form, setForm] = useState({
+    id: 0,
     name: "",
-    contact: "",
+    mobilenumber: "",
     address: "",
     email: "",
+    isactive: true,
   });
   const [engineersData, setengineersData] = useState<[]>([]);
   const [action, setAction] = useState<string>("");
-  const [actionData, setActionData] = useState<any>({});
+  const [loading, setLoading] = useState(false);
   const { user } = useAuthPermissions();
 
   const fetchEngineersData = async () => {
@@ -45,37 +47,43 @@ export default function EngineerMasterPage() {
 
       if (engineersData?.data?.length > 0) {
         const formattedData = engineersData?.data?.map((x) => x.data) ?? [];
+        console.log("Formatted Engineers Data:", formattedData);
         setengineersData(formattedData);
       } else {
         setengineersData([]);
       }
     } catch (error) {
-      Alert("error While fetching Engineers");
+      alert("Error While fetching Engineers");
       setengineersData([]);
     }
   };
 
   const AddEditDeleteEngineers = async (data: any, actionNew: string) => {
     try {
+      setLoading(true);
       const payload = {
         ...data,
         IsActive: actionNew == "delete" ? false : true,
-        id:
-          actionNew == "edit"
-            ? actionData?.id
-            : actionNew == "delete"
-            ? data?.id
-            : 0,
+        id: actionNew == "edit" || actionNew == "delete" ? data.id : 0,
       };
+      
+      console.log("Sending payload:", payload);
+      
       const engineersData = await createEngineer(payload);
       console.log(`AddedEngineersData`, engineersData);
+      
       if (engineersData?.success == true) {
-        Alert("Engineer Added Sucessfully");
+        alert(actionNew === "edit" ? "Engineer Updated Successfully" : 
+              actionNew === "delete" ? "Engineer Deleted Successfully" : 
+              "Engineer Added Successfully");
         await fetchEngineersData();
+        resetForm();
       }
-      setAction("");
     } catch (error) {
-      Alert("Engineer not inserted");
+      alert("Error saving engineer");
+      console.error("Error:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -85,9 +93,38 @@ export default function EngineerMasterPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name || !form.mobile || !form.address || !form.email) return;
-    AddEditDeleteEngineers(form, action);
-    setForm({ name: "", mobile: "", address: "", email: "" });
+    if (!form.name || !form.mobilenumber || !form.email) return;
+    AddEditDeleteEngineers(form, action || "add");
+  };
+
+  const resetForm = () => {
+    setForm({
+      id: 0,
+      name: "",
+      mobilenumber: "",
+      address: "",
+      email: "",
+      isactive: true,
+    });
+    setAction("");
+  };
+
+  const handleEdit = (engineer: any) => {
+    setForm({
+      id: engineer.id || 0,
+      name: engineer.name || "",
+      mobilenumber: engineer.mobileNumber || engineer.mobilenumber || "",
+      address: engineer.address || "",
+      email: engineer.email || "",
+      isactive:  true,
+    });
+    setAction("edit");
+  };
+
+  const handleDelete = (engineer: any) => {
+    if (window.confirm(`Are you sure you want to delete engineer "${engineer.name}"?`)) {
+      AddEditDeleteEngineers(engineer, "delete");
+    }
   };
 
   return (
@@ -117,15 +154,17 @@ export default function EngineerMasterPage() {
                     onChange={(e) =>
                       setForm((p) => ({ ...p, name: e.target.value }))
                     }
+                    disabled={loading}
                   />
                 </div>
                 <div className="space-y-1">
                   <Label>Contact Number</Label>
                   <Input
-                    value={form.contact}
+                    value={form.mobilenumber}
                     onChange={(e) =>
-                      setForm((p) => ({ ...p, contact: e.target.value }))
+                      setForm((p) => ({ ...p, mobilenumber: e.target.value }))
                     }
+                    disabled={loading}
                   />
                 </div>
                 <div className="space-y-1">
@@ -136,24 +175,32 @@ export default function EngineerMasterPage() {
                     onChange={(e) =>
                       setForm((p) => ({ ...p, email: e.target.value }))
                     }
+                    disabled={loading}
                   />
                 </div>
-                <div className="space-y-1 md:col-span-2 md:col-start-1">
-                  <Label>Address</Label>
-                  <Input
-                    value={form.address}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, address: e.target.value }))
-                    }
-                  />
-                </div>
-                <div className="md:col-span-2 flex items-end">
+                <div className="md:col-span-2 flex items-end gap-2">
                   <Button
                     type="submit"
-                    className="w-full bg-gradient-to-r from-blue-500 to-cyan-400"
+                    className={`w-full ${
+                      action === "edit" 
+                        ? "bg-gradient-to-r from-green-500 to-emerald-400" 
+                        : "bg-gradient-to-r from-blue-500 to-cyan-400"
+                    }`}
+                    disabled={loading}
                   >
-                    Add Engineer
+                    {loading ? "Processing..." : action === "edit" ? "Update Engineer" : "Add Engineer"}
                   </Button>
+                  {action === "edit" && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={resetForm}
+                      className="w-full"
+                      disabled={loading}
+                    >
+                      Cancel
+                    </Button>
+                  )}
                 </div>
               </form>
 
@@ -164,7 +211,7 @@ export default function EngineerMasterPage() {
                       <TableHead>Name</TableHead>
                       <TableHead>Contact</TableHead>
                       <TableHead>Email</TableHead>
-                      <TableHead>Address</TableHead>
+                      {/* <TableHead>Address</TableHead> */}
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -172,40 +219,29 @@ export default function EngineerMasterPage() {
                     {engineersData?.map((e: any, index: number) => (
                       <TableRow key={index}>
                         <TableCell className="font-medium">{e.name}</TableCell>
-                        <TableCell>{e.contact}</TableCell>
+                        <TableCell>{e.mobileNumber || e.mobilenumber}</TableCell>
                         <TableCell>{e.email}</TableCell>
-                        <TableCell className="max-w-sm truncate">
+                        {/* <TableCell className="max-w-sm truncate">
                           {e.address}
-                        </TableCell>
+                        </TableCell> */}
                         <TableCell className="text-right">
-                          <Button
-                            variant="outline"
-                            className="mr-2 bg-transparent"
-                            onClick={() => {
-                              setActionData(e);
-                              setForm({
-                                name: e?.name || "",
-                                address: e?.address || "",
-                                email: e?.email || "",
-                                mobile: e?.mobile || "",
-                              });
-                              setTimeout(() => {
-                                setAction("edit");
-                              }, 100);
-                            }}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            // onClick={() => deleteEngineer(e.id)}
-                            onClick={() => {
-                              setAction("delete");
-                              AddEditDeleteEngineers(e, "delete");
-                            }}
-                          >
-                            Delete
-                          </Button>
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              className="bg-transparent"
+                              onClick={() => handleEdit(e)}
+                              disabled={loading}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              onClick={() => handleDelete(e)}
+                              disabled={loading}
+                            >
+                              Delete
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}

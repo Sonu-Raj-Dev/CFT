@@ -16,6 +16,7 @@ export const USER_ROLES_URL = "/api/UserMaster/GetUserRoles";
 export const ROLE_PERMISSIONS_URL = "/api/RoleMaster/GetRolePermissions";
 export const CUSTOMERS_URL = "/api/CustomerMaster/GetAllCustomers";
 export const ENGINEERS_URL = "/api/EngineerMaster/GetAllEngineers";
+export const CREATE_ENGINEERS_URL = "/api/EngineerMaster/Create";
 
 // Complaints
 export const COMPLAINTS_URL = "/api/Complaint/GetAllComplaints";
@@ -36,6 +37,11 @@ export const ENGINEER_CREATE_URL = "/api/CustomerMaster/Create";
 
 // Create User Permissions
 export const USER_PERMISSIONS_CREATE_URL ="/api/UserMaster/CreateUserRoleMapping";
+
+
+// Role Permission
+export const USER_PERMISSIONS_BY_ROLE_URL ="/api/PermissionMaster/GetAllPermissionByRoleId";
+export const SAVE_PERMISSIONS_BY_ROLE_URL ="/api/PermissionMaster/SavePermissionByRoleId";
 
 
 // Helper to build absolute URLs

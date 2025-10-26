@@ -205,7 +205,7 @@ export default function UserRoleMappingPage() {
       roleId: userRole.roleId, // Use the userRole.roleId directly
       isactive: false
     };
-      debugger;
+
       await CreateRolePermissions(payload);
       alert("Role assignment deleted successfully!");
       await fetchUserRolesData();

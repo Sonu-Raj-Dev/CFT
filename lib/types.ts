@@ -6,6 +6,6 @@ export interface Complaint {
   address: string
   email: string
   natureOfComplaint: string
-  status: string
+  statusName: string
   assignedEngineer?: string
 }

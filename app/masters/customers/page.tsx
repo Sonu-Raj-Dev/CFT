@@ -66,12 +66,16 @@ export default function CustomerMasterPage() {
       setCustomersData([]);
     }
   };
-
+const handleDelete = (customer: any) => {
+  if (window.confirm(`Are you sure you want to delete customer "${customer.name}"?`)) {
+    AddEditDeleteCustomers(customer, "delete");
+  }
+};
   const AddEditDeleteCustomers = async (data: any, actionNew: string) => {
     try {
       const payload = {
         ...data,
-        IsActive: actionNew == "delete" ? false : true,
+        isactive: actionNew == "delete" ? false : true,
         id:
           actionNew == "edit"
             ? actionData?.id
@@ -239,7 +243,7 @@ export default function CustomerMasterPage() {
                             variant="destructive"
                             onClick={() => {
                               setAction("delete");
-                              AddEditDeleteCustomers(c, "delete");
+                              handleDelete(c);
                             }}
                           >
                             Delete

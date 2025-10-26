@@ -34,15 +34,15 @@ export type AppUser = {
 };
 export type RoleType = "Admin" | "ComplaintManager";
 export type RouteKey =
-  | "dashboard"
-  | "complaints"
-  | "registercomplaint"
-  | "customers"
-  | "engineers"
-  | "users"
-  | "role-mapping"
-  | "permission-mapping"
-  | "profile";
+  |  "Dashboard"
+   |  "Complaints"
+    |  "Customers"
+    |  "Engineers"
+    |  "Users"
+    |  "RoleMapping"
+    |  "PermissionMapping"
+    |  "Profile"
+    |  "registercomplaint";
 
 type RolePermissions = RPMap;
 type UserRoles = URMap; // userId -> roles
@@ -84,15 +84,15 @@ const STORAGE_KEYS = {
 };
 
 const allRoutes: RouteKey[] = [
-  "dashboard",
-  "complaints",
-  "registercomplaint",
-  "customers",
-  "engineers",
-  "users",
-  "role-mapping",
-  "permission-mapping",
-  "profile",
+  "Dashboard",
+      "Complaints",
+      "Customers",
+      "Engineers",
+      "Users",
+      "RoleMapping",
+      "PermissionMapping",
+      "Profile",
+      "registercomplaint"
 ];
 
 export function MasterDataProvider({ children }: { children: ReactNode }) {
@@ -165,7 +165,7 @@ export function MasterDataProvider({ children }: { children: ReactNode }) {
       const created = await createUsers(user);
       console.log(`useruser`, created);
 
-      // debugger;
+    
       setUsers((prev) => [created?.data, ...prev?.data]);
     } catch (error) {
       throw new Error("addUser API not implemented");

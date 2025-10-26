@@ -46,23 +46,24 @@ export function ComplaintProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const addComplaint = async (complaint: Omit<Complaint, "id" | "status">) => {
+  const addComplaint = async (complaint: any) => {
     const created = await createComplaint(complaint)
-    setComplaints((prev) => [created, ...prev])
+    //setComplaints((prev) => [created, ...prev])
   }
   const deleteComplaints = async (complaintId: string) => {
     await deleteComplaint(complaintId)
-    setComplaints((prev) => prev.filter((c) => c.id !== complaintId))
+    //setComplaints((prev) => prev.filter((c) => c.id !== complaintId))
   }
 
   const updateComplaint = async (id: string, updates: Partial<Complaint>) => {
     if (updates.engineerId) {
+      debugger;
       const updated = await assignEngineer(id, updates.engineerId)
       setComplaints((prev) => prev.map((c) => (c.id === id ? updated : c)))
       return
     }
     // If your API supports partial updates, wire here. For now, client-side merge:
-    setComplaints((prev) => prev.map((c) => (c.id === id ? { ...c, ...updates } : c)))
+   // setComplaints((prev) => prev.map((c) => (c.id === id ? { ...c, ...updates } : c)))
   }
 
   return (

@@ -25,37 +25,108 @@ export const dynamic = "force-dynamic";
 
 export default function UserMasterPage() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const { users, addUser, updateUser, deleteUser } = useMasterData();
+  const { users, addUser } = useMasterData();
   const { user } = useAuthPermissions();
   const [form, setForm] = useState({
+    id: 0,
     name: "",
     email: "",
-    mobile: "",
-    password: "",
-    address: "",
+    // mobile: "",
+    password: ""
+    // address: "",
   });
+  const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const usersList = useMemo(() => {
     return users?.data?.map((x) => x.data) ?? [];
   }, [users]);
-  // const usersList = users?.data?.map((x) => x.data) ?? [];
-  console.log(`userLissstrtt`, usersList);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (
       !form.name ||
       !form.email ||
-      // !form.mobile ||
       !form.password
-      // !form.address
     ) {
       return;
     }
 
-    const payload = { ...form, IsActive: true };
-    addUser(payload);
-    setForm({ name: "", email: "", mobile: "", password: "", address: "" });
+    setLoading(true);
+    try {
+      if (isEditing) {
+        // Update existing user
+        const payload1 = { ...form, isactive: true };
+        await addUser(payload1);
+      } else {
+        // Add new user
+        const payload = { ...form, isactive: true };
+        await addUser(payload);
+      }
+     
+      // Reset form
+      resetForm();
+      alert(isEditing ? "User updated successfully!" : "User added successfully!");
+      
+      // Reload the page after successful operation
+      window.location.reload();
+      
+    } catch (error) {
+      console.error("Error saving user:", error);
+      alert("Error saving user");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEdit = (userData: any) => {
+    setForm({
+      id: userData.id || 0,
+      name: userData.name || "",
+      email: userData.email || "",
+      // mobile: userData.mobile || "",
+      password: userData.password || ""
+      //address: userData.address || "",
+    });
+    setIsEditing(true);
+  };
+
+  const deleteUser = async (userData: any) => {
+    // Show confirmation alert
+    if (window.confirm(`Are you sure you want to delete user "${userData.name}"?`)) {
+      setLoading(true);
+      try {
+        const payload2 = { ...userData, isactive: false };
+        await addUser(payload2);
+
+        alert(`User "${userData.name}" has been deleted successfully!`);
+        
+        // Reload the page after successful deletion
+        window.location.reload();
+        
+      } catch (error) {
+        console.error("Error deleting user:", error);
+        alert("Error deleting user");
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const resetForm = () => {
+    setForm({
+      id: 0,
+      name: "",
+      email: "",
+      // mobile: "",
+      password: "",
+      // address: "",
+    });
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    resetForm();
   };
 
   return (
@@ -85,6 +156,8 @@ export default function UserMasterPage() {
                     onChange={(e) =>
                       setForm((p) => ({ ...p, name: e.target.value }))
                     }
+                    required
+                    disabled={loading}
                   />
                 </div>
                 <div className="space-y-1">
@@ -95,12 +168,10 @@ export default function UserMasterPage() {
                     onChange={(e) =>
                       setForm((p) => ({ ...p, email: e.target.value }))
                     }
+                    required
+                    disabled={loading}
                   />
                 </div>
-                {/* <div className="space-y-1">
-                  <Label>Mobile Number</Label>
-                  <Input value={form.mobile} onChange={(e) => setForm((p) => ({ ...p, mobile: e.target.value }))} />
-                </div> */}
                 <div className="space-y-1">
                   <Label>Password</Label>
                   <Input
@@ -109,19 +180,32 @@ export default function UserMasterPage() {
                     onChange={(e) =>
                       setForm((p) => ({ ...p, password: e.target.value }))
                     }
+                    required
+                    disabled={loading}
                   />
                 </div>
-                {/* <div className="space-y-1 md:col-span-2 md:col-start-1">
-                  <Label>Address</Label>
-                  <Input value={form.address} onChange={(e) => setForm((p) => ({ ...p, address: e.target.value }))} />
-                </div> */}
-                <div className="md:col-span-3 flex items-end">
+                <div className="flex items-end gap-2">
                   <Button
                     type="submit"
-                    className="w-full bg-gradient-to-r from-blue-500 to-cyan-400"
+                    className={`w-full ${isEditing
+                      ? "bg-gradient-to-r from-green-500 to-emerald-400"
+                      : "bg-gradient-to-r from-blue-500 to-cyan-400"
+                      }`}
+                    disabled={loading}
                   >
-                    Add User
+                    {loading ? "Processing..." : isEditing ? "Update User" : "Add User"}
                   </Button>
+                  {isEditing && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleCancel}
+                      className="w-full"
+                      disabled={loading}
+                    >
+                      Cancel
+                    </Button>
+                  )}
                 </div>
               </form>
 
@@ -131,8 +215,7 @@ export default function UserMasterPage() {
                     <TableRow className="bg-muted/50">
                       <TableHead>Name</TableHead>
                       <TableHead>Email</TableHead>
-                      {/* <TableHead>Mobile</TableHead>
-                      <TableHead>Address</TableHead> */}
+                      <TableHead>Password</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -141,22 +224,25 @@ export default function UserMasterPage() {
                       <TableRow key={index}>
                         <TableCell className="font-medium">{u.name}</TableCell>
                         <TableCell>{u.email}</TableCell>
-                        {/* <TableCell>{u.mobile}</TableCell>
-                        <TableCell className="max-w-sm truncate">{u.address}</TableCell> */}
+                        <TableCell>{u.password}</TableCell>
                         <TableCell className="text-right">
-                          <Button
-                            variant="outline"
-                            className="mr-2 bg-transparent"
-                            onClick={() => updateUser(u.id, { name: u.name })}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            onClick={() => deleteUser(u.id)}
-                          >
-                            Delete
-                          </Button>
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              className="bg-transparent"
+                              onClick={() => handleEdit(u)}
+                              disabled={loading}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              onClick={() => deleteUser(u)}
+                              disabled={loading}
+                            >
+                              Delete
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
