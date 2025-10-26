@@ -27,7 +27,7 @@ async function handle<T>(res: Response): Promise<T> {
 
 export async function apiGets<T>(path: string, body?: unknown, init?: RequestInit) {
   const url = withBase(path)
-  
+  debugger;
  // const t = withTimeout()
   try {
     const res = await fetch(url, {
