@@ -9,4 +9,6 @@ export interface Complaint {
   statusName: string
   assignedEngineer?: string
   engineerId:number
+  createdDate?: string
+  assignmentDate?: string
 }
