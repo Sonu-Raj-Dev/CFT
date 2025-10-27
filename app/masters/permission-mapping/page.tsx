@@ -8,13 +8,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { useMasterData, type Role, type RouteKey } from "@/lib/master-data-context"
-import { fetchPermissions, fetchRoles, fetchPermissionsByRole,SavePermissionsByRole } from "@/repositories/masters-repo"
+import { fetchPermissions, fetchRoles, fetchPermissionsByRole, SavePermissionsByRole } from "@/repositories/masters-repo"
 
 export default function PermissionMappingPage() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   const { rolePermissions, setRolePermissions } = useMasterData()
   const [role, setRole] = useState<string>("")
-  const [selected, setSelected] = useState<string[]>([]) // Change to string[] to store PermissionIds
+  const [selected, setSelected] = useState<string[]>([]) // Store PermissionIds
   const [user, setUser] = useState<any>(null)
   const [rolesData, setRolesData] = useState<any[]>([])
   const [permissionsData, setPermissionsData] = useState<any[]>([])
@@ -80,10 +80,11 @@ export default function PermissionMappingPage() {
         const formattedData = permissionsResponse.data.map((x: any) => x.data) ?? []
         setPermissionsData(formattedData)
         
-        // Extract PermissionIds from the mapping data
+        // Extract PermissionIds from the API response
         const selectedPermissionIds = formattedData
-          .map(mapping => mapping.permissionId)
+          .map(mapping => mapping.PermissionId || mapping.permissionId) // Handle both cases
           .filter(Boolean)
+          .map(id => id.toString()) // Ensure they are strings for comparison
         
         console.log(`Setting selected permission IDs:`, selectedPermissionIds)
         setSelected(selectedPermissionIds)
@@ -126,42 +127,47 @@ export default function PermissionMappingPage() {
         : [...prev, permissionId]
     )
 
-const save = async () => {
-  if (!role) {
-    alert("Please select a role first")
-    return
-  }
-
-  try {
-    const payload = {
-      roleId: role, 
-      permissionIds: selected.join(',')
+  const save = async () => {
+    if (!role) {
+      alert("Please select a role first")
+      return
     }
 
-    console.log('Saving payload:', payload)
- 
-    // Call the API to save permissions
-    await SavePermissionsByRole(payload)
-    
-    // Reload the data to reflect changes
-    await fetchRolesData()
-    await fetchAllPermissionsData()
-    
-    // If you want to reload the current role's permissions as well
-    if (role) {
-      const payload = { roleId: role }
-      await fetchPermissionsByRoleData(payload)
+    try {
+      const payload = {
+        roleId: role, 
+        permissionIds: selected.join(',')
+      }
+
+      console.log('Saving payload:', payload)
+  
+      // Call the API to save permissions
+      await SavePermissionsByRole(payload)
+      
+      // Reload the data to reflect changes
+      await fetchRolesData()
+      await fetchAllPermissionsData()
+      
+      // If you want to reload the current role's permissions as well
+      if (role) {
+        const payload = { roleId: role }
+        await fetchPermissionsByRoleData(payload)
+      }
+      
+      alert("Permissions updated successfully")
+    } catch (error) {
+      console.error("Error saving permissions:", error)
+      alert("Error updating permissions")
     }
-    
-    alert("Permissions updated successfully")
-  } catch (error) {
-    console.error("Error saving permissions:", error)
-    alert("Error updating permissions")
   }
-}
-  // Create route options from all available permissions data
- const routeOptions = allPermissions.map(permission => {
-    const permissionKey = permission.key || permission.name || permission.id;
+
+  // Create route options from all available permissions data with proper mapping
+  const routeOptions = allPermissions.map(permission => {
+    console.log('Processing permission:', permission);
+    
+    // Use the correct ID field - try different possible field names
+    const permissionId = permission.permissionId || permission.id || permission.PermissionId;
+    const permissionKey = permission.key || permission.name || permission.Key;
     
     // Define the label mappings
     const labelMappings: { [key: string]: string } = {
@@ -179,10 +185,14 @@ const save = async () => {
     // Get the label from mappings or use the original name
     const label = labelMappings[permissionKey] || permission.name || permission.label || permission.description || permissionKey;
 
+    // Create a unique key by combining id and key to ensure uniqueness
+    const uniqueKey = `${permissionId}-${permissionKey}`;
+
     return {
-      id: permission.id,
+      id: permissionId.toString(), // Ensure ID is string to match selected array
       key: permissionKey as RouteKey,
-      label: label
+      label: label,
+      uniqueKey: uniqueKey
     };
   });
 
@@ -196,6 +206,14 @@ const save = async () => {
   console.log(`Roles data:`, rolesData)
   console.log(`Selected permission IDs:`, selected)
   console.log(`All permissions:`, allPermissions)
+  console.log(`Route options:`, routeOptions)
+  console.log(`Permissions data from API:`, permissionsData)
+
+  // Debug: Check if IDs match
+  console.log(`Debug - Checking ID matching:`);
+  routeOptions.forEach(option => {
+    console.log(`Permission ${option.label}: ID=${option.id}, Selected=${selected.includes(option.id)}`);
+  });
 
   if (loading) {
     return (
@@ -257,10 +275,13 @@ const save = async () => {
                   {/* Permissions Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {routeOptions.map((permission) => (
-                      <label key={permission.id} className="flex items-center gap-3 border rounded-md p-3">
+                      <label 
+                        key={permission.uniqueKey}
+                        className="flex items-center gap-3 border rounded-md p-3"
+                      >
                         <Checkbox 
-                          checked={selected.includes(permission.id)} // Compare with permission ID
-                          onCheckedChange={() => toggle(permission.id)} // Toggle permission ID
+                          checked={selected.includes(permission.id)}
+                          onCheckedChange={() => toggle(permission.id)}
                         />
                         <span>{permission.label}</span>
                       </label>
