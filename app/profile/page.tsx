@@ -80,7 +80,7 @@ export default function ProfilePage() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-xl md:text-2xl font-bold">My Profile</CardTitle>
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Button
+                    {/* <Button
                       onClick={() => setIsEditing(!isEditing)}
                       variant={isEditing ? "outline" : "default"}
                       className={
@@ -90,7 +90,7 @@ export default function ProfilePage() {
                       }
                     >
                       {isEditing ? "Cancel" : "Edit Profile"}
-                    </Button>
+                    </Button> */}
                   </motion.div>
                 </div>
               </CardHeader>

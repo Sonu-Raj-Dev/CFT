@@ -27,7 +27,7 @@ export default function ComplaintModal({
   onUpdate,
   mode = "view"
 }: ComplaintModalProps) {
-  const [selectedEngineer, setSelectedEngineer] = useState<string>("")
+  const [selectedEngineer, setSelectedEngineer] = useState<number | null>(null)
   const [showSuccess, setShowSuccess] = useState(false)
   const [isEditing, setIsEditing] = useState(mode === "edit")
   const [formData, setFormData] = useState<Complaint>(complaint)
@@ -54,8 +54,8 @@ export default function ComplaintModal({
     setFormData(complaint)
     setIsEditing(mode === "edit")
 
-    if (complaint.assignedEngineer) {
-      setSelectedEngineer(complaint.assignedEngineer)
+    if (complaint.engineerId) {
+      setSelectedEngineer(complaint.engineerId)
     } else {
       setSelectedEngineer("")
     }
@@ -168,7 +168,7 @@ export default function ComplaintModal({
               <DialogTitle className="text-xl md:text-2xl font-bold">
                 {isEditing ? "Edit Complaint" : "Complaint Details"}
               </DialogTitle>
-              {!isEditing && (
+              {/* {!isEditing && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -177,7 +177,7 @@ export default function ComplaintModal({
                 >
                   Edit
                 </Button>
-              )}
+              )} */}
             </div>
           </DialogHeader>
 
@@ -307,9 +307,9 @@ export default function ComplaintModal({
                     ))}
                   </SelectContent>
                 </Select>
-                {selectedEngineer && complaint.assignedEngineer && (
+                {selectedEngineer && (
                   <p className="text-sm text-muted-foreground mt-1">
-                    Currently assigned to: {engineersList.find(e => e.id === complaint.assignedEngineer)?.name}
+                    Currently assigned to: {engineersList.find(e => e.id === selectedEngineer)?.name}
                   </p>
                 )}
               </div>

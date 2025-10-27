@@ -19,7 +19,7 @@ export default function Sidebar({ isMobileOpen = false, onClose }: SidebarProps)
 
   const allItems = useMemo(
     () => [
-      { key: "Dashboard", icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
+      // { key: "Dashboard", icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
       { key: "Complaints", icon: FileText, label: "View Complaints", path: "/dashboard" },
       { key: "registercomplaint", icon: FilePlus, label: "Register Complaint", path: "/registercomplaint" },
       { key: "Customers", icon: User, label: "Customer Master", path: "/masters/customers" },
@@ -36,7 +36,9 @@ export default function Sidebar({ isMobileOpen = false, onClose }: SidebarProps)
     ],
     [],
   )
-console.log("allowedRoutes in sidebar:", allowedRoutes);
+
+  console.log("allowedRoutes in sidebar:", allowedRoutes);
+  
   const menuItems = useMemo(
     () => allItems.filter((it) => allowedRoutes.includes(it.key as any)),
     [allowedRoutes, allItems],
@@ -48,7 +50,7 @@ console.log("allowedRoutes in sidebar:", allowedRoutes);
     }
   }, [pathname])
 
- const DesktopSidebar = () => (
+  const DesktopSidebar = () => (
     <aside
       className="hidden lg:block fixed left-0 top-[60px] bottom-0 bg-[#0d3b66] text-white overflow-hidden z-40 transition-all duration-300"
       style={{ width: isHovered ? '220px' : '60px' }}
@@ -60,15 +62,20 @@ console.log("allowedRoutes in sidebar:", allowedRoutes);
           <button
             key={`${item.key}-${item.path}`}
             onClick={() => handleNavigation(item.path)}
-            className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors mb-2 group ${
+            className={`w-full flex items-start gap-3 px-3 py-3 rounded-lg transition-colors mb-2 group ${
               pathname === item.path ? "bg-white/20" : "bg-white/10 hover:bg-white/20"
             }`}
           >
-            <item.icon className="h-5 w-5 flex-shrink-0" />
+            <item.icon className="h-5 w-5 flex-shrink-0 mt-0.5" />
             <span
-              className={`font-medium whitespace-nowrap transition-opacity duration-300 ${
-                isHovered ? 'opacity-100' : 'opacity-0'
-              }`}
+              className={`font-medium transition-opacity duration-300 text-left break-words ${
+                isHovered ? 'opacity-100 block' : 'opacity-0 hidden'
+              } ${item.label.length > 15 ? 'text-sm leading-tight' : 'text-base'}`}
+              style={{
+                wordWrap: 'break-word',
+                overflowWrap: 'break-word',
+                maxWidth: isHovered ? '160px' : '0px'
+              }}
             >
               {item.label}
             </span>
@@ -76,7 +83,8 @@ console.log("allowedRoutes in sidebar:", allowedRoutes);
         ))}
       </nav>
     </aside>
-  );
+  )
+
   const MobileSidebar = () => (
     <AnimatePresence>
       {isMobileOpen && (
@@ -96,7 +104,7 @@ console.log("allowedRoutes in sidebar:", allowedRoutes);
             animate={{ x: 0 }}
             exit={{ x: -280 }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="lg:hidden fixed left-0 top-[60px] bottom-0 w-64 bg-[#0d3b66] text-white z-50 shadow-2xl"
+            className="lg:hidden fixed left-0 top-[60px] bottom-0 w-64 bg-[#0d3b66] text-white z-50 shadow-2xl overflow-y-auto"
           >
             <div className="flex items-center justify-between p-4 border-b border-white/10">
               <h3 className="font-semibold text-lg">Menu</h3>
@@ -114,15 +122,26 @@ console.log("allowedRoutes in sidebar:", allowedRoutes);
             <nav className="p-4">
               {menuItems.map((item) => (
                 <motion.button
-                 key={item.key}
+                  key={item.key}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => handleNavigation(item.path)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors mb-2 ${
+                  className={`w-full flex items-start gap-3 px-4 py-3 rounded-lg transition-colors mb-2 text-left ${
                     pathname === item.path ? "bg-white/20" : "hover:bg-white/10"
                   }`}
                 >
-                  <item.icon className="h-5 w-5 flex-shrink-0" />
-                  <span className="font-medium">{item.label}</span>
+                  <item.icon className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                  <span 
+                    className={`font-medium break-words ${
+                      item.label.length > 20 ? 'text-sm leading-tight' : 'text-base'
+                    }`}
+                    style={{
+                      wordWrap: 'break-word',
+                      overflowWrap: 'break-word',
+                      maxWidth: '180px'
+                    }}
+                  >
+                    {item.label}
+                  </span>
                 </motion.button>
               ))}
             </nav>

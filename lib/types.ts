@@ -8,4 +8,5 @@ export interface Complaint {
   natureOfComplaint: string
   statusName: string
   assignedEngineer?: string
+  engineerId:number
 }
