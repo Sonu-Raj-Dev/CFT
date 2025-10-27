@@ -112,8 +112,8 @@ export default function RegisterComplaintPage() {
       // Prepare complaint data with CreatedBy
       const complaintData = {
         ...formData,
-        id: Date.now(), // Generate unique ID
-        status: "Open",
+        id: 0, // Generate unique ID
+        statusId: 1,
         createdAt: new Date().toISOString(),
         CreatedBy: parseInt(currentUser.id),
         // Add any other required fields for your complaint context

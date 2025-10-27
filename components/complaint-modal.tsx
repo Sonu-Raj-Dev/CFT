@@ -104,10 +104,10 @@ export default function ComplaintModal({
       setIsLoading(true)
       try {
         const payload = {
-          Id: complaint.id,
+          id: complaint.id,
           engineerId: selectedEngineer
         }
-
+console.log("Assigning engineer with payload:", payload);
         const response = await assignEngineer(payload)
         setShowSuccess(true)
 
