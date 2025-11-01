@@ -22,6 +22,7 @@ export const CREATE_ENGINEERS_URL = "/api/EngineerMaster/Create";
 export const COMPLAINTS_URL = "/api/Complaint/GetAllComplaints";
 export const CREATE_COMPLAINT_URL = "/api/Complaint/Create";
 export const ASSIGN_ENGINEER_URL = "/api/Complaint/AssignEngineer";
+export const GET_NATURE_OF_COMPLAINT_URL = "/api/Complaint/GetNatureOfComplaint";
 
 export const DELETE_COMPLAINT_URL = "/api/Complaint/Delete";
 // Aliases for expected import names
