@@ -15,7 +15,8 @@ import {
   USER_PERMISSIONS_CREATE_URL,
   USER_PERMISSIONS_BY_ROLE_URL,
   SAVE_PERMISSIONS_BY_ROLE_URL,
-  CREATE_ENGINEERS_URL
+  CREATE_ENGINEERS_URL,
+  GET_NATURE_OF_COMPLAINT_URL
 } from "@/lib/api/endpoints";
 
 export type User = {
@@ -94,4 +95,9 @@ export async function fetchPermissionsByRole(payload: any) {
 
 export async function SavePermissionsByRole(payload: any) {
   return apiPost<RolePermissions>(SAVE_PERMISSIONS_BY_ROLE_URL, payload);
+}
+
+// Fetch Nature of Complaint
+export async function fetchNatureOfComplaint(payload?: any) {
+  return apiGet<any[]>(GET_NATURE_OF_COMPLAINT_URL);
 }

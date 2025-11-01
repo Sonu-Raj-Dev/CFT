@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,16 +15,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Header from "@/components/header"
 import Sidebar from "@/components/sidebar"
 import Footer from "@/components/footer"
+import { fetchNatureOfComplaint } from "@/repositories/masters-repo"
 
 export default function RegisterComplaintPage() {
   const router = useRouter()
-  const { addComplaint } = useComplaints()
+  const { addComplaint} = useComplaints()
   const { customers } = useMasterData()
   const [user, setUser] = useState<{ id: number; name: string; email: string } | null>(null)
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [ripplePosition, setRipplePosition] = useState<{ x: number; y: number } | null>(null)
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>("")
+  const [natureOfComplaint, setNatureOfComplaint] = useState<any[]>([])
 
   const customersList = customers?.data?.map((x) => x.data) ?? []
   console.log("customersList:", customersList)
@@ -39,6 +41,9 @@ export default function RegisterComplaintPage() {
     Complaintdetails: "",
     CustomerId: 0 // This should be number, not string
   })
+  useEffect(() => {
+    fetchNatureOptions();
+  }, []); 
 
   useEffect(() => {
     const storedUser = localStorage.getItem("cft_user")
@@ -56,6 +61,16 @@ export default function RegisterComplaintPage() {
       [e.target.name]: e.target.value,
     }))
   }
+  const fetchNatureOptions = async () => {
+    try {
+      const response = await fetchNatureOfComplaint();
+      setNatureOfComplaint(response);
+
+      console.log("Nature of Co mplaint options:", response);
+    } catch (error) {
+      console.error("Error fetching nature of complaint:", error);
+    }
+  };
 
   const handleSelectCustomer = (id: string) => {
     setSelectedCustomerId(id)
@@ -72,6 +87,7 @@ export default function RegisterComplaintPage() {
     }
   }
 
+ 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsSubmitting(true)
