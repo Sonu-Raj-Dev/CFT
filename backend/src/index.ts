@@ -1,33 +1,35 @@
-import express from 'express';
+import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import 'express-async-errors';
 import dotenv from 'dotenv';
 
-import { errorHandler } from './middleware/error-handler';
-import { requestLogger } from './middleware/request-logger';
+import { initializeDatabase } from './config/database.js';
+import { logger } from './utils/logger.js';
+import { errorHandler } from './middleware/error-handler.js';
+import { requestLogger } from './middleware/request-logger.js';
 
-// Load environment variables
+// Routes
+import authRoutes from './routes/auth.routes.js';
+import usersRoutes from './routes/masters/users.routes.js';
+import rolesRoutes from './routes/masters/roles.routes.js';
+import permissionsRoutes from './routes/masters/permissions.routes.js';
+import rolePermissionsRoutes from './routes/masters/role-permissions.routes.js';
+import userRolesRoutes from './routes/masters/user-roles.routes.js';
+import customersRoutes from './routes/masters/customers.routes.js';
+import engineersRoutes from './routes/masters/engineers.routes.js';
+import statusesRoutes from './routes/masters/statuses.routes.js';
+import complaintsRoutes from './routes/complaints.routes.js';
+
 dotenv.config();
 
-// Import routes
-import authRoutes from './routes/auth.routes';
-import usersRoutes from './routes/masters/users.routes';
-import rolesRoutes from './routes/masters/roles.routes';
-import permissionsRoutes from './routes/masters/permissions.routes';
-import rolePermissionsRoutes from './routes/masters/role-permissions.routes';
-import userRolesRoutes from './routes/masters/user-roles.routes';
-import customersRoutes from './routes/masters/customers.routes';
-import engineersRoutes from './routes/masters/engineers.routes';
-import statusesRoutes from './routes/masters/statuses.routes';
-import complaintsRoutes from './routes/complaints.routes';
-
-const app = express();
+const app: Express = express();
 const PORT = process.env.PORT || 5000;
+const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:3000';
 
 // Middleware
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: CORS_ORIGIN,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -38,12 +40,13 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(morgan('combined'));
 app.use(requestLogger);
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
+// Health Check Endpoint
+app.get('/health', (req: Request, res: Response) => {
+  res.json({
+    status: 'ok',
+    message: 'Backend server is running',
     timestamp: new Date().toISOString(),
-    uptime: process.uptime()
+    uptime: process.uptime(),
   });
 });
 
@@ -59,8 +62,8 @@ app.use('/api/masters/engineers', engineersRoutes);
 app.use('/api/masters/statuses', statusesRoutes);
 app.use('/api/complaints', complaintsRoutes);
 
-// 404 handler
-app.use((req, res) => {
+// 404 Handler
+app.use((req: Request, res: Response) => {
   res.status(404).json({
     success: false,
     message: 'Route not found',
@@ -69,13 +72,28 @@ app.use((req, res) => {
   });
 });
 
-// Error handler (must be last)
+// Global Error Handler (must be last)
 app.use(errorHandler);
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-});
+// Start Server
+async function startServer() {
+  try {
+    logger.info('Initializing database connection...');
+    await initializeDatabase();
+    logger.info('Database connected successfully');
+
+    app.listen(PORT, () => {
+      logger.info(`Backend server running on http://localhost:${PORT}`);
+      logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
+      logger.info(`CORS enabled for: ${CORS_ORIGIN}`);
+      logger.info('Health check available at: http://localhost:${PORT}/health');
+    });
+  } catch (error) {
+    logger.error('Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+startServer();
 
 export default app;

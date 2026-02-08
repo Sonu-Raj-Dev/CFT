@@ -6,7 +6,12 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "backend:dev": "cd backend && npm run dev",
+    "backend:build": "cd backend && npm run build",
+    "backend:start": "cd backend && npm start",
+    "backend:migrate": "cd backend && npm run db:migrate",
+    "backend:seed": "cd backend && npm run db:seed"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "latest",
